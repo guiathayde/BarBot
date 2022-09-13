@@ -14,6 +14,7 @@ import {
   TouchableHighlight,
   View,
 } from 'react-native';
+import SplashScreen from 'react-native-splash-screen';
 import BleManager from 'react-native-ble-manager';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 
@@ -163,6 +164,8 @@ const App = () => {
   };
 
   useEffect(() => {
+    SplashScreen.hide();
+
     BleManager.start({ showAlert: false });
 
     bleManagerEmitter.addListener(

@@ -12,7 +12,8 @@
   "dependencies": {
     "react": "18.1.0",
     "react-native": "0.70.0",
-    "react-native-ble-manager": "^8.4.3"
+    "react-native-ble-manager": "^8.4.3",
+    "react-native-splash-screen": "^3.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
