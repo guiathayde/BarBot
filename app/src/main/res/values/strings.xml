@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">BarBot</string>
+    <string name="devices">Bluetooth Devices</string>
+</resources>
