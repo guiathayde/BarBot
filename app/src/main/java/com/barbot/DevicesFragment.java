@@ -1,6 +1,6 @@
 package com.barbot;
 
-import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
@@ -8,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.ListFragment;
 
@@ -37,6 +36,7 @@ public class DevicesFragment extends ListFragment {
         if (getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH))
             bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         listAdapter = new ArrayAdapter<BluetoothDevice>(getActivity(), 0, listItems) {
+            @SuppressLint("MissingPermission")
             @NonNull
             @Override
             public View getView(int position, View view, @NonNull ViewGroup parent) {
@@ -45,7 +45,6 @@ public class DevicesFragment extends ListFragment {
                     view = getActivity().getLayoutInflater().inflate(R.layout.device_list_item, parent, false);
                 TextView text1 = view.findViewById(R.id.text1);
                 TextView text2 = view.findViewById(R.id.text2);
-                if (checkBluetoothPermission()) return view;
                 text1.setText(device.getName());
                 text2.setText(device.getAddress());
                 return view;
@@ -59,7 +58,7 @@ public class DevicesFragment extends ListFragment {
         setListAdapter(null);
         View header = getActivity().getLayoutInflater().inflate(R.layout.device_list_header, null, false);
         getListView().addHeaderView(header, null, false);
-        setEmptyText("initializing...");
+        setEmptyText("inicializando...");
         ((TextView) getListView().getEmptyView()).setTextSize(18);
         setListAdapter(listAdapter);
     }
@@ -96,15 +95,15 @@ public class DevicesFragment extends ListFragment {
         }
     }
 
+    @SuppressLint("MissingPermission")
     void refresh() {
         listItems.clear();
         if (bluetoothAdapter != null) {
-            if (checkBluetoothPermission()) return;
             for (BluetoothDevice device : bluetoothAdapter.getBondedDevices())
                 if (device.getType() != BluetoothDevice.DEVICE_TYPE_LE)
                     listItems.add(device);
         }
-        Collections.sort(listItems, (a, b) -> compareTo(a, b));
+        Collections.sort(listItems, DevicesFragment::compareTo);
         listAdapter.notifyDataSetChanged();
     }
 
@@ -121,22 +120,16 @@ public class DevicesFragment extends ListFragment {
     /**
      * sort by name, then address. sort named devices first
      */
-    int compareTo(BluetoothDevice a, BluetoothDevice b) {
-         if (checkBluetoothPermission()) return 0;
-
-        boolean aValid = a.getName() != null && !a.getName().isEmpty();
-        boolean bValid = b.getName() != null && !b.getName().isEmpty();
+    static int compareTo(BluetoothDevice a, BluetoothDevice b) {
+        @SuppressLint("MissingPermission") boolean aValid = a.getName() != null && !a.getName().isEmpty();
+        @SuppressLint("MissingPermission") boolean bValid = b.getName() != null && !b.getName().isEmpty();
         if (aValid && bValid) {
-            int ret = a.getName().compareTo(b.getName());
+            @SuppressLint("MissingPermission") int ret = a.getName().compareTo(b.getName());
             if (ret != 0) return ret;
             return a.getAddress().compareTo(b.getAddress());
         }
         if (aValid) return -1;
         if (bValid) return +1;
         return a.getAddress().compareTo(b.getAddress());
-    }
-
-    private boolean checkBluetoothPermission() {
-        return ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED;
     }
 }

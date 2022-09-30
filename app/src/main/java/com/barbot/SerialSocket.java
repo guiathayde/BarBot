@@ -1,6 +1,5 @@
 package com.barbot;
 
-import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -8,9 +7,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
-
-import androidx.core.app.ActivityCompat;
 
 import java.io.IOException;
 import java.security.InvalidParameterException;
@@ -31,14 +27,14 @@ class SerialSocket implements Runnable {
     private boolean connected;
 
     SerialSocket(Context context, BluetoothDevice device) {
-        if (context instanceof Activity)
+        if(context instanceof Activity)
             throw new InvalidParameterException("expected non UI context");
         this.context = context;
         this.device = device;
         disconnectBroadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if (listener != null)
+                if(listener != null)
                     listener.onSerialIoError(new IOException("background disconnect"));
                 disconnect(); // disconnect now, else would be queued until UI re-attached
             }
@@ -46,7 +42,6 @@ class SerialSocket implements Runnable {
     }
 
     String getName() {
-        if (checkBluetoothPermission()) return "";
         return device.getName() != null ? device.getName() : device.getAddress();
     }
 
@@ -62,7 +57,7 @@ class SerialSocket implements Runnable {
     void disconnect() {
         listener = null; // ignore remaining data and errors
         // connected = false; // run loop will reset connected
-        if (socket != null) {
+        if(socket != null) {
             try {
                 socket.close();
             } catch (Exception ignored) {
@@ -83,22 +78,21 @@ class SerialSocket implements Runnable {
 
     @Override
     public void run() { // connect & read
-        if (checkBluetoothPermission())
+        try {
+            socket = device.createRfcommSocketToServiceRecord(BLUETOOTH_SPP);
+            socket.connect();
+            if(listener != null)
+                listener.onSerialConnect();
+        } catch (Exception e) {
+            if(listener != null)
+                listener.onSerialConnectError(e);
             try {
-                socket = device.createRfcommSocketToServiceRecord(BLUETOOTH_SPP);
-                socket.connect();
-                if (listener != null)
-                    listener.onSerialConnect();
-            } catch (Exception e) {
-                if (listener != null)
-                    listener.onSerialConnectError(e);
-                try {
-                    socket.close();
-                } catch (Exception ignored) {
-                }
-                socket = null;
-                return;
+                socket.close();
+            } catch (Exception ignored) {
             }
+            socket = null;
+            return;
+        }
         connected = true;
         try {
             byte[] buffer = new byte[1024];
@@ -107,7 +101,7 @@ class SerialSocket implements Runnable {
             while (true) {
                 len = socket.getInputStream().read(buffer);
                 byte[] data = Arrays.copyOf(buffer, len);
-                if (listener != null)
+                if(listener != null)
                     listener.onSerialRead(data);
             }
         } catch (Exception e) {
@@ -120,10 +114,6 @@ class SerialSocket implements Runnable {
             }
             socket = null;
         }
-    }
-
-    private boolean checkBluetoothPermission() {
-        return ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED;
     }
 
 }
