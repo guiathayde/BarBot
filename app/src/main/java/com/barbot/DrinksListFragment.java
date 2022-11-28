@@ -1,7 +1,6 @@
 package com.barbot;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
@@ -13,6 +12,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.IBinder;
 import android.text.Spannable;
@@ -26,17 +27,24 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
+import java.util.ArrayList;
+
 public class DrinksListFragment extends Fragment implements ServiceConnection, SerialListener {
 
-    private enum Connected { False, Pending, True }
+    SecurityPreferences mSecurityPreferences;
+
+    DrinkListRecyclerViewAdapter adapter;
+
+    private enum Connected {False, Pending, True}
 
     private String deviceAddress;
     private SerialService service;
 
     private DrinksListFragment.Connected connected = DrinksListFragment.Connected.False;
     private boolean initialStart = true;
-    private boolean hexEnabled = false;
-    private String newline = TextUtil.newline_crlf;
+    private final String newline = TextUtil.newline_crlf;
 
     /*
      * Lifecycle
@@ -46,7 +54,11 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         setRetainInstance(true);
+
+        mSecurityPreferences = new SecurityPreferences(getContext());
+
         deviceAddress = getArguments().getString("device");
+        deviceAddress = mSecurityPreferences.getStoredString("device");
     }
 
     @Override
@@ -60,7 +72,7 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
     @Override
     public void onStart() {
         super.onStart();
-        if(service != null)
+        if (service != null)
             service.attach(this);
         else
             getActivity().startService(new Intent(getActivity(), SerialService.class)); // prevents service destroy on unbind from recreated activity caused by orientation change
@@ -68,12 +80,13 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
 
     @Override
     public void onStop() {
-        if(service != null && !getActivity().isChangingConfigurations())
+        if (service != null && !getActivity().isChangingConfigurations())
             service.detach();
         super.onStop();
     }
 
-    @SuppressWarnings("deprecation") // onAttach(context) was added with API 23. onAttach(activity) works for all API versions
+    @SuppressWarnings("deprecation")
+    // onAttach(context) was added with API 23. onAttach(activity) works for all API versions
     @Override
     public void onAttach(@NonNull Activity activity) {
         super.onAttach(activity);
@@ -82,14 +95,17 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
 
     @Override
     public void onDetach() {
-        try { getActivity().unbindService(this); } catch(Exception ignored) {}
+        try {
+            getActivity().unbindService(this);
+        } catch (Exception ignored) {
+        }
         super.onDetach();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if(initialStart && service != null) {
+        if (initialStart && service != null) {
             initialStart = false;
             getActivity().runOnUiThread(this::connect);
         }
@@ -99,7 +115,7 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
     public void onServiceConnected(ComponentName name, IBinder binder) {
         service = ((SerialService.SerialBinder) binder).getService();
         service.attach(this);
-        if(initialStart && isResumed()) {
+        if (initialStart && isResumed()) {
             initialStart = false;
             getActivity().runOnUiThread(this::connect);
         }
@@ -110,43 +126,141 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
         service = null;
     }
 
-    /*
-     * UI
-     */
+    private void storeDrinkInformationInSecurityPreferences(Integer drinkResourceImageId, String drinkName, ArrayList<String> ingredients) {
+        mSecurityPreferences.storeString("drinkResourceImageId", drinkResourceImageId.toString());
+        mSecurityPreferences.storeString("drinkName", drinkName);
+
+        Gson gson = new Gson();
+        String jsonIngredients = gson.toJson(ingredients);
+        mSecurityPreferences.storeString("ingredients", jsonIngredients);
+    }
+
+    private void changeScreenToMakeDrinkFragment() {
+        Bundle args = new Bundle();
+        args.putString("device", deviceAddress);
+        Fragment fragment = new MakeDrinkFragment();
+        fragment.setArguments(args);
+        disconnect();
+        getFragmentManager().beginTransaction().replace(R.id.fragment, fragment, "make_drink").addToBackStack(null).commit();
+    }
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_drinks_list, container, false);
-        View vodkaButton = view.findViewById(R.id.buttonVodka);
-        vodkaButton.setOnClickListener(v -> send("m"));
+
+        ArrayList<String> caipirinhaIngredients = new ArrayList<>();
+        caipirinhaIngredients.add("50 ml de Vodka");
+        caipirinhaIngredients.add("150 ml de Suco de limão");
+
+        ArrayList<String> blueLagoonIngredients = new ArrayList<>();
+        blueLagoonIngredients.add("50 ml de Vodka");
+        blueLagoonIngredients.add("25 ml de Licor de Curaçau Blue");
+        blueLagoonIngredients.add("150 ml de Suco de limão");
+
+        ArrayList<String> cosmoIngredients = new ArrayList<>();
+        cosmoIngredients.add("40 ml de Vodka");
+        cosmoIngredients.add("30 ml de Xarope de cranberry");
+        cosmoIngredients.add("15 ml de Suco de limão");
+
+        ArrayList<String> lemonDropIngredients = new ArrayList<>();
+        lemonDropIngredients.add("50 ml de Vodka");
+        lemonDropIngredients.add("30 ml de Suco de limão");
+        lemonDropIngredients.add("30 ml de Água com açúcar");
+
+        ArrayList<String> blueMoonIngredients = new ArrayList<>();
+        blueMoonIngredients.add("30 ml de Vodka");
+        blueMoonIngredients.add("50 ml de Xarope de cranberry");
+        blueMoonIngredients.add("30 ml de Suco de limão");
+        blueMoonIngredients.add("20 ml de Água com açúcar");
+        blueMoonIngredients.add("20 ml de Licor Curuaçau Blue Stock");
+
+        ArrayList<String> blueGinMoonIngredients = new ArrayList<>();
+        blueGinMoonIngredients.add("50 ml de Xarope de cranberry");
+        blueGinMoonIngredients.add("30 ml de Suco de limão");
+        blueGinMoonIngredients.add("20 ml de Água com açúcar");
+        blueGinMoonIngredients.add("20 ml de Licor Curuaçau Blue Stock");
+        blueGinMoonIngredients.add("30 ml de Gin");
+
+        ArrayList<String> doubleStrikeIngredients = new ArrayList<>();
+        doubleStrikeIngredients.add("30 ml de Vodka");
+        doubleStrikeIngredients.add("50 ml de Xarope de cranberry");
+        doubleStrikeIngredients.add("30 ml de Suco de limão");
+        doubleStrikeIngredients.add("20 ml de Licor Curuaçau Blue Stock");
+
+        ArrayList<String> tomCollinsIngredients = new ArrayList<>();
+        tomCollinsIngredients.add("30 ml de Suco de limão");
+        tomCollinsIngredients.add("30 ml de Água com açúcar");
+        tomCollinsIngredients.add("35 ml de Gin");
+
+        ArrayList<String> flyingDutchmanIngredients = new ArrayList<>();
+        flyingDutchmanIngredients.add("20 ml de Suco de limão");
+        flyingDutchmanIngredients.add("15 ml de Água com açúcar");
+        flyingDutchmanIngredients.add("30 ml de Gin");
+
+        ArrayList<String> londonCosmoIngredients = new ArrayList<>();
+        londonCosmoIngredients.add("80 ml de Xarope de cranberry");
+        londonCosmoIngredients.add("30 ml de Gin");
+
+        ArrayList<String> vodkaCranberryIngredients = new ArrayList<>();
+        vodkaCranberryIngredients.add("30 ml de Vodka");
+        vodkaCranberryIngredients.add("80 ml de Xarope de cranberry");
+        vodkaCranberryIngredients.add("20 ml de Água com açúcar");
+
+        ArrayList<String> cranberryGinIngredients = new ArrayList<>();
+        cranberryGinIngredients.add("80 ml de Xarope de cranberry");
+        cranberryGinIngredients.add("30 ml de Suco de limão");
+        cranberryGinIngredients.add("35 ml de Gin");
+
+        ArrayList<DrinkListModel> drinks = new ArrayList<>();
+        drinks.add(new DrinkListModel("Caipirinha", R.drawable.caipirinha, caipirinhaIngredients));
+        drinks.add(new DrinkListModel("Blue Lagoon", R.drawable.blue_lagoon, blueLagoonIngredients));
+        drinks.add(new DrinkListModel("Cosmo", R.drawable.cosmo, cosmoIngredients));
+        drinks.add(new DrinkListModel("Lemon Drop", R.drawable.lemon_drop, lemonDropIngredients));
+        drinks.add(new DrinkListModel("Blue Moon", R.drawable.blue_moon, blueMoonIngredients));
+        drinks.add(new DrinkListModel("Blue Gin Moon", R.drawable.blue_gin_moon, blueGinMoonIngredients));
+        drinks.add(new DrinkListModel("Double Strike", R.drawable.double_strike, doubleStrikeIngredients));
+        drinks.add(new DrinkListModel("Tom Collins", R.drawable.tom_collins, tomCollinsIngredients));
+        drinks.add(new DrinkListModel("Flying Dutchman", R.drawable.flying_dutchman, flyingDutchmanIngredients));
+        drinks.add(new DrinkListModel("London Cosmo", R.drawable.london_cosmo, londonCosmoIngredients));
+        drinks.add(new DrinkListModel("Vodka Cranberry", R.drawable.vodka_cranberry, vodkaCranberryIngredients));
+        drinks.add(new DrinkListModel("Cranberry Gin", R.drawable.cranberry_gin, cranberryGinIngredients));
+
+        RecyclerView recyclerView = view.findViewById(R.id.recyclerViewDrinksList);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter = new DrinkListRecyclerViewAdapter(getContext(), drinks);
+        adapter.setClickListener((v, position) -> {
+            DrinkListModel drink = adapter.getItem(position);
+            storeDrinkInformationInSecurityPreferences(drink.getDrinkImageResourceId(), drink.getDrinkName(), drink.getIngredients());
+            changeScreenToMakeDrinkFragment();
+        });
+        recyclerView.setAdapter(adapter);
+
         return view;
     }
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_terminal, menu);
-        menu.findItem(R.id.hex).setChecked(hexEnabled);
+        inflater.inflate(R.menu.menu_drinks_list, menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.clear) {
+        if (id == R.id.drinks_settings) {
+            Bundle args = new Bundle();
+            args.putString("device", deviceAddress);
+            Fragment fragment = new DrinksSetupFragment();
+            fragment.setArguments(args);
+            disconnect();
+            getFragmentManager().beginTransaction().replace(R.id.fragment, fragment, "drinks_setup").addToBackStack(null).commit();
             return true;
-        } else if (id == R.id.newline) {
-            String[] newlineNames = getResources().getStringArray(R.array.newline_names);
-            String[] newlineValues = getResources().getStringArray(R.array.newline_values);
-            int pos = java.util.Arrays.asList(newlineValues).indexOf(newline);
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setTitle("Newline");
-            builder.setSingleChoiceItems(newlineNames, pos, (dialog, item1) -> {
-                newline = newlineValues[item1];
-                dialog.dismiss();
-            });
-            builder.create().show();
-            return true;
-        } else if (id == R.id.hex) {
-            hexEnabled = !hexEnabled;
-            item.setChecked(hexEnabled);
+        } else if (id == R.id.debug_settings) {
+            Bundle args = new Bundle();
+            args.putString("device", deviceAddress);
+            Fragment fragment = new TerminalFragment();
+            fragment.setArguments(args);
+            disconnect();
+            getFragmentManager().beginTransaction().replace(R.id.fragment, fragment, "terminal").addToBackStack(null).commit();
             return true;
         } else {
             return super.onOptionsItemSelected(item);
@@ -175,14 +289,15 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
     }
 
     private void send(String str) {
-        if(connected != DrinksListFragment.Connected.True) {
-            Toast.makeText(getActivity(), "not connected", Toast.LENGTH_SHORT).show();
+        if (connected != DrinksListFragment.Connected.True) {
+            Toast.makeText(getActivity(), "Bluetooth não conectado", Toast.LENGTH_SHORT).show();
             return;
         }
         try {
             String msg;
             byte[] data;
-            if(hexEnabled) {
+            boolean hexEnabled = false;
+            if (hexEnabled) {
                 StringBuilder sb = new StringBuilder();
                 TextUtil.toHexString(sb, TextUtil.fromHexString(str));
                 TextUtil.toHexString(sb, newline.getBytes());
@@ -202,11 +317,7 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
 
     private void receive(byte[] data) {
         String msg = new String(data);
-        if(newline.equals(TextUtil.newline_crlf) && msg.length() > 0) {
-            // don't show CR as ^M if directly before LF
-            msg = msg.replace(TextUtil.newline_crlf, TextUtil.newline_lf);
-            boolean pendingNewline = msg.charAt(msg.length() - 1) == '\r';
-        }
+        Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
     }
 
     private void status(String str) {
@@ -221,6 +332,8 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
     public void onSerialConnect() {
         status("connected");
         connected = DrinksListFragment.Connected.True;
+        Toast.makeText(getContext(), "Bluetooth conectado", Toast.LENGTH_LONG).show();
+        send("First message#");
     }
 
     @Override

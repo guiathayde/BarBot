@@ -30,6 +30,8 @@ import androidx.fragment.app.Fragment;
 
 public class TerminalFragment extends Fragment implements ServiceConnection, SerialListener {
 
+    private SecurityPreferences mSecurityPreferences;
+
     private enum Connected { False, Pending, True }
 
     private String deviceAddress;
@@ -53,7 +55,11 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         setRetainInstance(true);
+
+        mSecurityPreferences = new SecurityPreferences(getContext());
+
         deviceAddress = getArguments().getString("device");
+        deviceAddress = mSecurityPreferences.getStoredString("device");
     }
 
     @Override

@@ -1,14 +1,291 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".DrinksSetupFragment">
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:fillViewport="true">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:paddingBottom="64dp"
+        tools:context=".DrinksSetupFragment">
 
-</FrameLayout>
+        <TextView
+            android:id="@+id/textDrinkOne"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="Bebida 1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textFieldNameDrinkOne"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:hint="Nome"
+            app:layout_constraintEnd_toStartOf="@+id/textFieldQuantityDrinkOne"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textDrinkOne">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/textInputNameDrinkOne"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textFieldQuantityDrinkOne"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:hint="Quantidade"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/textFieldNameDrinkOne"
+            app:layout_constraintTop_toBottomOf="@+id/textDrinkOne">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/textInputQuantityDrinkOne"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/textDrinkTwo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="Bebida 2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textFieldQuantityDrinkOne" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textFieldNameDrinkTwo"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:hint="Nome"
+            app:layout_constraintEnd_toStartOf="@+id/textFieldQuantityDrinkTwo"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textDrinkTwo">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/textInputNameDrinkTwo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textFieldQuantityDrinkTwo"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:hint="Quantidade"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/textFieldNameDrinkTwo"
+            app:layout_constraintTop_toBottomOf="@+id/textDrinkTwo">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/textInputQuantityDrinkTwo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/textDrinkThree"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="Bebida 3"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textFieldNameDrinkTwo" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textFieldNameDrinkThree"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:hint="Nome"
+            app:layout_constraintEnd_toStartOf="@+id/textFieldQuantityDrinkThree"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textDrinkThree">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/textInputNameDrinkThree"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textFieldQuantityDrinkThree"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:hint="Quantidade"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/textFieldNameDrinkThree"
+            app:layout_constraintTop_toBottomOf="@+id/textDrinkThree">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/textInputQuantityDrinkThree"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/textDrinkFour"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="Bebida 4"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textFieldNameDrinkThree" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textFieldNameDrinkFour"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:hint="Nome"
+            app:layout_constraintEnd_toStartOf="@+id/textFieldQuantityDrinkFour"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textDrinkFour">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/textInputNameDrinkFour"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textFieldQuantityDrinkFour"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:hint="Quantidade"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/textFieldNameDrinkFour"
+            app:layout_constraintTop_toBottomOf="@+id/textDrinkFour">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/textInputQuantityDrinkFour"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/textDrinkFive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="Bebida 5"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textFieldNameDrinkFour" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textFieldNameDrinkFive"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:hint="Nome"
+            app:layout_constraintEnd_toStartOf="@+id/textFieldQuantityDrinkFive"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textDrinkFive">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/textInputNameDrinkFive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textFieldQuantityDrinkFive"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:hint="Nome"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/textFieldNameDrinkFive"
+            app:layout_constraintTop_toBottomOf="@+id/textDrinkFive">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/textInputQuantityDrinkFive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/textDrinkSix"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="Bebida 6"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textFieldNameDrinkFive" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textFieldNameDrinkSix"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:hint="Nome"
+            app:layout_constraintEnd_toStartOf="@+id/textFieldQuantityDrinkSix"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textDrinkSix">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/textInputNameDrinkSix"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textFieldQuantityDrinkSix"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:hint="Quantidade"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/textFieldNameDrinkSix"
+            app:layout_constraintTop_toBottomOf="@+id/textDrinkSix">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/textInputQuantityDrinkSix"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/buttonSave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Salvar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textFieldQuantityDrinkSix" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

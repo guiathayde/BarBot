@@ -29,10 +29,15 @@ public class DevicesFragment extends ListFragment {
     private final ArrayList<BluetoothDevice> listItems = new ArrayList<>();
     private ArrayAdapter<BluetoothDevice> listAdapter;
 
+    private SecurityPreferences mSecurityPreferences;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
+        mSecurityPreferences = new SecurityPreferences(getContext());
+
         if (getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH))
             bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         listAdapter = new ArrayAdapter<BluetoothDevice>(getActivity(), 0, listItems) {
@@ -110,6 +115,7 @@ public class DevicesFragment extends ListFragment {
     @Override
     public void onListItemClick(@NonNull ListView l, @NonNull View v, int position, long id) {
         BluetoothDevice device = listItems.get(position - 1);
+        mSecurityPreferences.storeString("device", device.getAddress());
         Bundle args = new Bundle();
         args.putString("device", device.getAddress());
 //         Fragment fragment = new TerminalFragment();
