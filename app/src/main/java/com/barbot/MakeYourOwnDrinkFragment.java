@@ -12,8 +12,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.IBinder;
 import android.text.Spannable;
@@ -23,29 +21,26 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
-public class MakeDrinkFragment extends Fragment implements ServiceConnection, SerialListener {
+public class MakeYourOwnDrinkFragment extends Fragment implements ServiceConnection, SerialListener {
 
-    SecurityPreferences mSecurityPreferences;
+    private SecurityPreferences mSecurityPreferences;
 
     private enum Connected {False, Pending, True}
 
     private String deviceAddress;
     private SerialService service;
 
-    private MakeDrinkFragment.Connected connected = MakeDrinkFragment.Connected.False;
+    private MakeYourOwnDrinkFragment.Connected connected = MakeYourOwnDrinkFragment.Connected.False;
     private boolean initialStart = true;
     private final String newline = TextUtil.newline_crlf;
-
-    IngredientRecyclerViewAdapter adapter;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,13 +49,61 @@ public class MakeDrinkFragment extends Fragment implements ServiceConnection, Se
 
         mSecurityPreferences = new SecurityPreferences(getContext());
 
-        deviceAddress = getArguments().getString("device");
         deviceAddress = mSecurityPreferences.getStoredString("device");
     }
 
     @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_make_your_own, container, false);
+
+        ArrayList<String> drinksNames = new ArrayList<>();
+        for (String key : Constants.ALL_DRINKS_NAMES) {
+            String drinkName = mSecurityPreferences.getStoredString(key);
+            if (drinkName.length() > 0)
+                drinksNames.add(drinkName);
+        }
+
+        TextView[] drinksNamesTextView = {
+                view.findViewById(R.id.textDrinkOne),
+                view.findViewById(R.id.textDrinkTwo),
+                view.findViewById(R.id.textDrinkThree),
+                view.findViewById(R.id.textDrinkFour),
+                view.findViewById(R.id.textDrinkFive),
+                view.findViewById(R.id.textDrinkSix),
+        };
+
+        for (int i = 0; i < drinksNames.size(); i++)
+            drinksNamesTextView[i].setText(drinksNames.get(i));
+
+        TextInputEditText[] drinksQuantitiesTextInputEditText = {
+                view.findViewById(R.id.textInputQuantityDrinkOne),
+                view.findViewById(R.id.textInputQuantityDrinkTwo),
+                view.findViewById(R.id.textInputQuantityDrinkThree),
+                view.findViewById(R.id.textInputQuantityDrinkFour),
+                view.findViewById(R.id.textInputQuantityDrinkFive),
+                view.findViewById(R.id.textInputQuantityDrinkSix),
+        };
+
+        Button makeYourOwnDrinkButton = view.findViewById(R.id.buttonMakeYourOwnDrink);
+        makeYourOwnDrinkButton.setOnClickListener(v -> {
+            StringBuilder message = new StringBuilder();
+            for (int i = 0; i < drinksNames.size(); i++) {
+                if (i == 0)
+                    message.append(drinksNames.get(i)).append(":").append(drinksQuantitiesTextInputEditText[i].getText().toString());
+                else
+                    message.append(":").append(drinksNames.get(i)).append(":").append(drinksQuantitiesTextInputEditText[i].getText().toString());
+            }
+
+            send(message.toString());
+        });
+
+        return view;
+    }
+
+    @Override
     public void onDestroy() {
-        if (connected != MakeDrinkFragment.Connected.False)
+        if (connected != MakeYourOwnDrinkFragment.Connected.False)
             disconnect();
         getActivity().stopService(new Intent(getActivity(), SerialService.class));
         super.onDestroy();
@@ -82,6 +125,8 @@ public class MakeDrinkFragment extends Fragment implements ServiceConnection, Se
         super.onStop();
     }
 
+    @SuppressWarnings("deprecation")
+    // onAttach(context) was added with API 23. onAttach(activity) works for all API versions
     @Override
     public void onAttach(@NonNull Activity activity) {
         super.onAttach(activity);
@@ -121,48 +166,12 @@ public class MakeDrinkFragment extends Fragment implements ServiceConnection, Se
         service = null;
     }
 
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_make_drink, container, false);
-
-        String drinkName = mSecurityPreferences.getStoredString("drinkName");
-        TextView drinkNameTextView = view.findViewById(R.id.textMakeDrinkName);
-        drinkNameTextView.setText(drinkName);
-
-        String drinkResourceImageId = mSecurityPreferences.getStoredString("drinkResourceImageId");
-        ImageView drinkImageView = view.findViewById(R.id.imageMakeDrink);
-        drinkImageView.setImageResource(Integer.parseInt(drinkResourceImageId));
-
-        String jsonIngredients = mSecurityPreferences.getStoredString("ingredients");
-        Gson gson = new Gson();
-        String[] userItems = gson.fromJson(jsonIngredients,
-                String[].class);
-
-        ArrayList<String> ingredients = new ArrayList<>(Arrays.asList(userItems));
-
-        RecyclerView recyclerView = view.findViewById(R.id.recyclerViewIngredients);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new IngredientRecyclerViewAdapter(getContext(), ingredients);
-        adapter.setClickListener((viewItem, position) -> {
-            Toast.makeText(getContext(), "Voce clicou " + adapter.getItem(position) + " da posição " + position, Toast.LENGTH_SHORT).show();
-        });
-        recyclerView.setAdapter(adapter);
-
-        Button makeDrinkButton = view.findViewById(R.id.buttonMakeDrink);
-        makeDrinkButton.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Voce clicou para fazer a bebida", Toast.LENGTH_SHORT).show();
-            send("Make " + drinkName);
-        });
-
-        return view;
-    }
-
     private void connect() {
         try {
             BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
             BluetoothDevice device = bluetoothAdapter.getRemoteDevice(deviceAddress);
             status("connecting...");
-            connected = MakeDrinkFragment.Connected.Pending;
+            connected = MakeYourOwnDrinkFragment.Connected.Pending;
             SerialSocket socket = new SerialSocket(getActivity().getApplicationContext(), device);
             service.connect(socket);
         } catch (Exception e) {
@@ -171,12 +180,12 @@ public class MakeDrinkFragment extends Fragment implements ServiceConnection, Se
     }
 
     private void disconnect() {
-        connected = MakeDrinkFragment.Connected.False;
+        connected = MakeYourOwnDrinkFragment.Connected.False;
         service.disconnect();
     }
 
     private void send(String str) {
-        if (connected != MakeDrinkFragment.Connected.True) {
+        if (connected != MakeYourOwnDrinkFragment.Connected.True) {
             Toast.makeText(getActivity(), "Bluetooth não conectado", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -218,8 +227,9 @@ public class MakeDrinkFragment extends Fragment implements ServiceConnection, Se
     @Override
     public void onSerialConnect() {
         status("connected");
-        connected = MakeDrinkFragment.Connected.True;
+        connected = MakeYourOwnDrinkFragment.Connected.True;
         Toast.makeText(getContext(), "Bluetooth conectado", Toast.LENGTH_LONG).show();
+        send("First message#");
     }
 
     @Override

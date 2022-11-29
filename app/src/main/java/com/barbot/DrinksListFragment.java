@@ -25,6 +25,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -46,9 +48,6 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
     private boolean initialStart = true;
     private final String newline = TextUtil.newline_crlf;
 
-    /*
-     * Lifecycle
-     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,7 +56,6 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
 
         mSecurityPreferences = new SecurityPreferences(getContext());
 
-        deviceAddress = getArguments().getString("device");
         deviceAddress = mSecurityPreferences.getStoredString("device");
     }
 
@@ -144,13 +142,23 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
         getFragmentManager().beginTransaction().replace(R.id.fragment, fragment, "make_drink").addToBackStack(null).commit();
     }
 
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_drinks_list, container, false);
+    private void changeScreenToMakeYourOwnDrinkFragment() {
+        Bundle args = new Bundle();
+        args.putString("device", deviceAddress);
+        Fragment fragment = new MakeYourOwnDrinkFragment();
+        fragment.setArguments(args);
+        disconnect();
+        getFragmentManager().beginTransaction().replace(R.id.fragment, fragment, "make_your_own_drink").addToBackStack(null).commit();
+    }
 
+    private void renderDrinksList(View view) {
         ArrayList<String> caipirinhaIngredients = new ArrayList<>();
         caipirinhaIngredients.add("50 ml de Vodka");
         caipirinhaIngredients.add("150 ml de Suco de limão");
+
+//        ArrayList<DrinkListModel.Ingredient> caipirinhaIngredients = new ArrayList<>();
+//        caipirinhaIngredients.add(new DrinkListModel.Ingredient("Vodka", 50));
+//        caipirinhaIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 150));
 
         ArrayList<String> blueLagoonIngredients = new ArrayList<>();
         blueLagoonIngredients.add("50 ml de Vodka");
@@ -211,8 +219,15 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
         cranberryGinIngredients.add("30 ml de Suco de limão");
         cranberryGinIngredients.add("35 ml de Gin");
 
+        ArrayList<String> makeYourOwnIngredients = new ArrayList<>();
+
         ArrayList<DrinkListModel> drinks = new ArrayList<>();
-        drinks.add(new DrinkListModel("Caipirinha", R.drawable.caipirinha, caipirinhaIngredients));
+        drinks.add(new DrinkListModel(
+                "Caipirinha",
+                R.drawable.caipirinha,
+                caipirinhaIngredients
+
+        ));
         drinks.add(new DrinkListModel("Blue Lagoon", R.drawable.blue_lagoon, blueLagoonIngredients));
         drinks.add(new DrinkListModel("Cosmo", R.drawable.cosmo, cosmoIngredients));
         drinks.add(new DrinkListModel("Lemon Drop", R.drawable.lemon_drop, lemonDropIngredients));
@@ -224,16 +239,35 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
         drinks.add(new DrinkListModel("London Cosmo", R.drawable.london_cosmo, londonCosmoIngredients));
         drinks.add(new DrinkListModel("Vodka Cranberry", R.drawable.vodka_cranberry, vodkaCranberryIngredients));
         drinks.add(new DrinkListModel("Cranberry Gin", R.drawable.cranberry_gin, cranberryGinIngredients));
+        drinks.add(new DrinkListModel("Faça o seu", R.drawable.mystery_drink, makeYourOwnIngredients));
 
         RecyclerView recyclerView = view.findViewById(R.id.recyclerViewDrinksList);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new DrinkListRecyclerViewAdapter(getContext(), drinks);
         adapter.setClickListener((v, position) -> {
             DrinkListModel drink = adapter.getItem(position);
-            storeDrinkInformationInSecurityPreferences(drink.getDrinkImageResourceId(), drink.getDrinkName(), drink.getIngredients());
-            changeScreenToMakeDrinkFragment();
+            storeDrinkInformationInSecurityPreferences(drink.getDrinkImageResourceId(), drink.getDrinkName(), drink.getIngredientsList());
+            if (drink.getDrinkName() == "Faça o seu")
+                changeScreenToMakeYourOwnDrinkFragment();
+            else
+                changeScreenToMakeDrinkFragment();
         });
         recyclerView.setAdapter(adapter);
+
+        ProgressBar loading = view.findViewById(R.id.progressBarLoadingDrinks);
+        loading.setVisibility(View.GONE);
+
+        TextView loadingText = view.findViewById(R.id.textLoadingDrinks);
+        loadingText.setVisibility(View.GONE);
+
+        recyclerView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_drinks_list, container, false);
+
+        renderDrinksList(view);
 
         return view;
     }
@@ -317,7 +351,16 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
 
     private void receive(byte[] data) {
         String msg = new String(data);
-        Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
+
+        if (msg.contains("InitialSetup")) {
+            String[] initialSetup = msg.split(":");
+            for (int i = 1; i < initialSetup.length; i++) {
+                if (i % 2 == 0)
+                    mSecurityPreferences.storeString(Constants.ALL_DRINKS_QUANTITY[i], initialSetup[i]);
+                else
+                    mSecurityPreferences.storeString(Constants.ALL_DRINKS_NAMES[i], initialSetup[i]);
+            }
+        }
     }
 
     private void status(String str) {
@@ -325,15 +368,13 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
         spn.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.colorStatusText)), 0, spn.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
-    /*
-     * SerialListener
-     */
     @Override
     public void onSerialConnect() {
         status("connected");
         connected = DrinksListFragment.Connected.True;
         Toast.makeText(getContext(), "Bluetooth conectado", Toast.LENGTH_LONG).show();
-        send("First message#");
+        send("FirstMessage#");
+        send("InitialSetup#");
     }
 
     @Override

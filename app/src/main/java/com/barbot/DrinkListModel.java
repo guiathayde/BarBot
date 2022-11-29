@@ -6,12 +6,28 @@ public class DrinkListModel {
 
     Integer drinkImageResourceId;
     String drinkName;
-    ArrayList<String> ingredients;
+    ArrayList<String> ingredientsList;
+//    Ingredient[] ingredients;
 
-    public DrinkListModel(String drinkName, Integer drinkImageResourceId, ArrayList<String> ingredients) {
+    public static class Ingredient {
+        String name;
+        Integer quantity;
+
+        public Ingredient(String name, Integer quantity) {
+            this.name = name;
+            this.quantity = quantity;
+        }
+
+        public String getName() { return name; }
+
+        public Integer getQuantity() { return quantity; }
+    }
+
+    public DrinkListModel(String drinkName, Integer drinkImageResourceId, ArrayList<String> ingredientsList) {
         this.drinkImageResourceId = drinkImageResourceId;
         this.drinkName = drinkName;
-        this.ingredients = ingredients;
+        this.ingredientsList = ingredientsList;
+//        this.ingredients = ingredients;
     }
 
     public String getDrinkName() {
@@ -22,7 +38,9 @@ public class DrinkListModel {
         return drinkImageResourceId;
     }
 
-    public ArrayList<String> getIngredients() {
-        return ingredients;
+    public ArrayList<String> getIngredientsList() {
+        return ingredientsList;
     }
+
+//    public Ingredient[] getIngredients() { return ingredients; }
 }

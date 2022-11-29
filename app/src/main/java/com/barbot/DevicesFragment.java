@@ -116,11 +116,7 @@ public class DevicesFragment extends ListFragment {
     public void onListItemClick(@NonNull ListView l, @NonNull View v, int position, long id) {
         BluetoothDevice device = listItems.get(position - 1);
         mSecurityPreferences.storeString("device", device.getAddress());
-        Bundle args = new Bundle();
-        args.putString("device", device.getAddress());
-//         Fragment fragment = new TerminalFragment();
         Fragment fragment = new DrinksListFragment();
-        fragment.setArguments(args);
         getFragmentManager().beginTransaction().replace(R.id.fragment, fragment, "drinks_list").addToBackStack(null).commit();
     }
 
