@@ -10,6 +10,8 @@ android {
         applicationId "com.barbot"
         versionCode 1
         versionName "1.0"
+
+        multiDexEnabled true
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -36,4 +38,5 @@ dependencies {
     implementation "androidx.room:room-guava:2.4.3"
     testImplementation "androidx.room:room-testing:2.4.3"
     implementation "androidx.room:room-paging:2.4.3"
+    implementation 'com.android.support:multidex:1.0.3'
 }

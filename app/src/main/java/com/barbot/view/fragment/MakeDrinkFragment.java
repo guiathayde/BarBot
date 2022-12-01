@@ -1,4 +1,4 @@
-package com.barbot;
+package com.barbot.view.fragment;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -10,7 +10,11 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.Room;
 
 import android.os.IBinder;
 import android.text.Spannable;
@@ -20,51 +24,46 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.material.textfield.TextInputEditText;
+import com.barbot.database.AppDatabase;
+import com.barbot.constant.*;
+import com.barbot.model.DrinkListModel;
+import com.barbot.model.DrinkModel;
+import com.barbot.model.DrinkModelDao;
+import com.barbot.view.adapter.IngredientRecyclerViewAdapter;
+import com.barbot.R;
+import com.barbot.SecurityPreferences;
+import com.barbot.bluetooth.SerialListener;
+import com.barbot.bluetooth.SerialService;
+import com.barbot.bluetooth.SerialSocket;
+import com.barbot.bluetooth.TextUtil;
+import com.google.gson.Gson;
 
-public class DrinksSetupFragment extends Fragment implements ServiceConnection, SerialListener {
+import java.util.ArrayList;
+import java.util.Arrays;
 
-    private SecurityPreferences mSecurityPreferences;
+public class MakeDrinkFragment extends Fragment implements ServiceConnection, SerialListener {
+
+    SecurityPreferences mSecurityPreferences;
+
+    AppDatabase db;
 
     private enum Connected {False, Pending, True}
 
     private String deviceAddress;
     private SerialService service;
 
-    private DrinksSetupFragment.Connected connected = DrinksSetupFragment.Connected.False;
+    private MakeDrinkFragment.Connected connected = MakeDrinkFragment.Connected.False;
     private boolean initialStart = true;
+    private final String newline = TextUtil.newline_crlf;
 
-    TextInputEditText inputFieldNameDrinkOne;
-    TextInputEditText inputFieldQuantityDrinkOne;
-
-    TextInputEditText inputFieldNameDrinkTwo;
-    TextInputEditText inputFieldQuantityDrinkTwo;
-
-    TextInputEditText inputFieldNameDrinkThree;
-    TextInputEditText inputFieldQuantityDrinkThree;
-
-    TextInputEditText inputFieldNameDrinkFour;
-    TextInputEditText inputFieldQuantityDrinkFour;
-
-    TextInputEditText inputFieldNameDrinkFive;
-    TextInputEditText inputFieldQuantityDrinkFive;
-
-    TextInputEditText inputFieldNameDrinkSix;
-    TextInputEditText inputFieldQuantityDrinkSix;
-
-    Button buttonSave;
-
-    public DrinksSetupFragment() {
-    }
-
-    public static DrinksSetupFragment newInstance() {
-        return new DrinksSetupFragment();
-    }
+    IngredientRecyclerViewAdapter adapter;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
 
@@ -72,11 +71,14 @@ public class DrinksSetupFragment extends Fragment implements ServiceConnection, 
 
         deviceAddress = getArguments().getString("device");
         deviceAddress = mSecurityPreferences.getStoredString("device");
+
+        db = Room.databaseBuilder(getActivity().getApplicationContext(),
+                AppDatabase.class, Constants.DATABASE_NAME).allowMainThreadQueries().build();
     }
 
     @Override
     public void onDestroy() {
-        if (connected != DrinksSetupFragment.Connected.False)
+        if (connected != MakeDrinkFragment.Connected.False)
             disconnect();
         getActivity().stopService(new Intent(getActivity(), SerialService.class));
         super.onDestroy();
@@ -137,70 +139,72 @@ public class DrinksSetupFragment extends Fragment implements ServiceConnection, 
         service = null;
     }
 
-    /*
-     * UI
-     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_drinks_setup, container, false);
+        View view = inflater.inflate(R.layout.fragment_make_drink, container, false);
 
-        inputFieldNameDrinkOne = view.findViewById(R.id.textInputNameDrinkOne);
-        inputFieldQuantityDrinkOne = view.findViewById(R.id.textInputQuantityDrinkOne);
+        String drinkName = mSecurityPreferences.getStoredString("drinkName");
+        TextView drinkNameTextView = view.findViewById(R.id.textMakeDrinkName);
+        drinkNameTextView.setText(drinkName);
 
-        inputFieldNameDrinkTwo = view.findViewById(R.id.textInputNameDrinkTwo);
-        inputFieldQuantityDrinkTwo = view.findViewById(R.id.textInputQuantityDrinkTwo);
+        String drinkResourceImageId = mSecurityPreferences.getStoredString("drinkResourceImageId");
+        ImageView drinkImageView = view.findViewById(R.id.imageMakeDrink);
+        drinkImageView.setImageResource(Integer.parseInt(drinkResourceImageId));
 
-        inputFieldNameDrinkThree = view.findViewById(R.id.textInputNameDrinkThree);
-        inputFieldQuantityDrinkThree = view.findViewById(R.id.textInputQuantityDrinkThree);
+        String jsonIngredients = mSecurityPreferences.getStoredString("ingredients");
+        Gson gson = new Gson();
+        DrinkListModel.Ingredient[] ingredientsItem = gson.fromJson(jsonIngredients,
+                DrinkListModel.Ingredient[].class);
 
-        inputFieldNameDrinkFour = view.findViewById(R.id.textInputNameDrinkFour);
-        inputFieldQuantityDrinkFour = view.findViewById(R.id.textInputQuantityDrinkFour);
+        ArrayList<DrinkListModel.Ingredient> ingredients = new ArrayList<>(Arrays.asList(ingredientsItem));
 
-        inputFieldNameDrinkFive = view.findViewById(R.id.textInputNameDrinkFive);
-        inputFieldQuantityDrinkFive = view.findViewById(R.id.textInputQuantityDrinkFive);
+        RecyclerView recyclerView = view.findViewById(R.id.recyclerViewIngredients);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter = new IngredientRecyclerViewAdapter(getContext(), ingredients);
+        adapter.setClickListener((viewItem, position) -> {
+            Toast.makeText(getContext(), "Voce clicou " + adapter.getItem(position) + " da posição " + position, Toast.LENGTH_SHORT).show();
+        });
+        recyclerView.setAdapter(adapter);
 
-        inputFieldNameDrinkSix = view.findViewById(R.id.textInputNameDrinkSix);
-        inputFieldQuantityDrinkSix = view.findViewById(R.id.textInputQuantityDrinkSix);
+        DrinkModelDao drinkDao = db.drinkDao();
 
-        buttonSave = view.findViewById(R.id.buttonSave);
-        buttonSave.setOnClickListener(v -> sendDrinksSetup());
+        Button makeDrinkButton = view.findViewById(R.id.buttonMakeDrink);
+        makeDrinkButton.setOnClickListener(v -> {
+            Toast.makeText(getContext(), "Voce clicou para fazer " + drinkName, Toast.LENGTH_SHORT).show();
+
+            boolean isPossibleMakeDrink = true;
+            ArrayList<DrinkModel> drinksUpdated = new ArrayList<>();
+            for (DrinkListModel.Ingredient ingredient : ingredients) {
+                DrinkModel drink = drinkDao.findByName(ingredient.getName());
+
+                isPossibleMakeDrink = drink.quantity >= ingredient.getQuantity();
+
+                if (isPossibleMakeDrink) {
+                    int quantity = drink.quantity - ingredient.getQuantity();
+                    drinksUpdated.add(new DrinkModel(drink.uid, drink.getName(), quantity));
+                } else {
+                    break;
+                }
+            }
+
+            if (isPossibleMakeDrink) {
+                send("Make " + drinkName);
+                for (DrinkModel drinkUpdate : drinksUpdated)
+                    drinkDao.update(drinkUpdate);
+                Toast.makeText(getContext(), "Preparando drink", Toast.LENGTH_LONG).show();
+            } else
+                Toast.makeText(getContext(), "Não tem bebida suficiente", Toast.LENGTH_LONG).show();
+        });
 
         return view;
     }
 
-    private void sendDrinksSetup() {
-        String nameDrinkOne = inputFieldNameDrinkOne.getText().toString();
-        String quantityDrinkOne = inputFieldQuantityDrinkOne.getText().toString();
-
-        String nameDrinkTwo = inputFieldNameDrinkTwo.getText().toString();
-        String quantityDrinkTwo = inputFieldQuantityDrinkTwo.getText().toString();
-
-        String nameDrinkThree = inputFieldNameDrinkThree.getText().toString();
-        String quantityDrinkThree = inputFieldQuantityDrinkThree.getText().toString();
-
-        String nameDrinkFour = inputFieldNameDrinkFour.getText().toString();
-        String quantityDrinkFour = inputFieldQuantityDrinkFour.getText().toString();
-
-        String nameDrinkFive = inputFieldNameDrinkFive.getText().toString();
-        String quantityDrinkFive = inputFieldQuantityDrinkFive.getText().toString();
-
-        String nameDrinkSix = inputFieldNameDrinkSix.getText().toString();
-        String quantityDrinkSix = inputFieldQuantityDrinkSix.getText().toString();
-
-        String data = "DrinkSetup" + ":" + nameDrinkOne + ":" + quantityDrinkOne + ":" + nameDrinkTwo + ":" + quantityDrinkTwo + ":" + nameDrinkThree + ":" + quantityDrinkThree + ":" + nameDrinkFour + ":" + quantityDrinkFour + ":" + nameDrinkFive + ":" + quantityDrinkFive + ":" + nameDrinkSix + ":" + quantityDrinkSix;
-
-        send(data);
-    }
-
-    /*
-     * Serial + UI
-     */
     private void connect() {
         try {
             BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
             BluetoothDevice device = bluetoothAdapter.getRemoteDevice(deviceAddress);
             status("connecting...");
-            connected = DrinksSetupFragment.Connected.Pending;
+            connected = MakeDrinkFragment.Connected.Pending;
             SerialSocket socket = new SerialSocket(getActivity().getApplicationContext(), device);
             service.connect(socket);
         } catch (Exception e) {
@@ -209,12 +213,12 @@ public class DrinksSetupFragment extends Fragment implements ServiceConnection, 
     }
 
     private void disconnect() {
-        connected = DrinksSetupFragment.Connected.False;
+        connected = MakeDrinkFragment.Connected.False;
         service.disconnect();
     }
 
     private void send(String str) {
-        if (connected != DrinksSetupFragment.Connected.True) {
+        if (connected != MakeDrinkFragment.Connected.True) {
             Toast.makeText(getActivity(), "Bluetooth não conectado", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -222,7 +226,6 @@ public class DrinksSetupFragment extends Fragment implements ServiceConnection, 
             String msg;
             byte[] data;
             boolean hexEnabled = false;
-            String newline = TextUtil.newline_crlf;
             if (hexEnabled) {
                 StringBuilder sb = new StringBuilder();
                 TextUtil.toHexString(sb, TextUtil.fromHexString(str));
@@ -243,27 +246,7 @@ public class DrinksSetupFragment extends Fragment implements ServiceConnection, 
 
     private void receive(byte[] data) {
         String msg = new String(data);
-        String[] initialDrinkSetup = msg.split(":");
-        for (String s : initialDrinkSetup)
-            Toast.makeText(getContext(), s, Toast.LENGTH_SHORT).show();
-
-        inputFieldNameDrinkOne.setText(initialDrinkSetup[0]);
-        inputFieldQuantityDrinkOne.setText(initialDrinkSetup[1]);
-
-        inputFieldNameDrinkTwo.setText(initialDrinkSetup[2]);
-        inputFieldQuantityDrinkTwo.setText(initialDrinkSetup[3]);
-
-        inputFieldNameDrinkThree.setText(initialDrinkSetup[4]);
-        inputFieldQuantityDrinkThree.setText(initialDrinkSetup[5]);
-
-        inputFieldNameDrinkFour.setText(initialDrinkSetup[6]);
-        inputFieldQuantityDrinkFour.setText(initialDrinkSetup[7]);
-
-        inputFieldNameDrinkFive.setText(initialDrinkSetup[8]);
-        inputFieldQuantityDrinkFive.setText(initialDrinkSetup[9]);
-
-        inputFieldNameDrinkSix.setText(initialDrinkSetup[10]);
-        inputFieldQuantityDrinkSix.setText(initialDrinkSetup[11]);
+        Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
     }
 
     private void status(String str) {
@@ -277,9 +260,8 @@ public class DrinksSetupFragment extends Fragment implements ServiceConnection, 
     @Override
     public void onSerialConnect() {
         status("connected");
-        connected = DrinksSetupFragment.Connected.True;
+        connected = MakeDrinkFragment.Connected.True;
         Toast.makeText(getContext(), "Bluetooth conectado", Toast.LENGTH_LONG).show();
-        send("InitialSetup#");
     }
 
     @Override

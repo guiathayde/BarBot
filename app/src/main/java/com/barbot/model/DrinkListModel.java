@@ -1,4 +1,4 @@
-package com.barbot;
+package com.barbot.model;
 
 import java.util.ArrayList;
 

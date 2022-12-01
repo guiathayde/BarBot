@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:padding="16dp"
         android:paddingBottom="64dp"
-        tools:context=".DrinksSetupFragment">
+        tools:context=".view.fragment.DrinksSetupFragment">
 
         <TextView
             android:id="@+id/textDrinkOne"

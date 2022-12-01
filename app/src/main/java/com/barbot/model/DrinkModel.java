@@ -1,4 +1,4 @@
-package com.barbot;
+package com.barbot.model;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
@@ -23,6 +23,7 @@ public class DrinkModel {
         this.quantity = quantity;
     }
 
+    public int getUid() { return uid; }
     public String getName() { return name; }
     public Integer getQuantity() { return quantity; }
 }

@@ -1,4 +1,4 @@
-package com.barbot;
+package com.barbot.view.fragment;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -30,10 +30,21 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.barbot.database.AppDatabase;
+import com.barbot.constant.Constants;
+import com.barbot.model.DrinkListModel;
+import com.barbot.view.adapter.DrinkListRecyclerViewAdapter;
+import com.barbot.model.DrinkModel;
+import com.barbot.model.DrinkModelDao;
+import com.barbot.R;
+import com.barbot.SecurityPreferences;
+import com.barbot.bluetooth.SerialListener;
+import com.barbot.bluetooth.SerialService;
+import com.barbot.bluetooth.SerialSocket;
+import com.barbot.bluetooth.TextUtil;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class DrinksListFragment extends Fragment implements ServiceConnection, SerialListener {
 
@@ -50,7 +61,6 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
 
     private DrinksListFragment.Connected connected = DrinksListFragment.Connected.False;
     private boolean initialStart = true;
-    private final String newline = TextUtil.newline_crlf;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -63,7 +73,7 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
         deviceAddress = mSecurityPreferences.getStoredString("device");
 
         db = Room.databaseBuilder(getActivity().getApplicationContext(),
-                AppDatabase.class, Constants.DATABASE_NAME).build();
+                AppDatabase.class, Constants.DATABASE_NAME).allowMainThreadQueries().build();
     }
 
     @Override
@@ -329,6 +339,7 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
             String msg;
             byte[] data;
             boolean hexEnabled = false;
+            String newline = TextUtil.newline_crlf;
             if (hexEnabled) {
                 StringBuilder sb = new StringBuilder();
                 TextUtil.toHexString(sb, TextUtil.fromHexString(str));
@@ -351,15 +362,11 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
         String msg = new String(data);
 
         if (msg.contains("InitialSetup")) {
+            DrinkModelDao drinkDao = db.drinkDao();
+            drinkDao.deleteAll();
             String[] initialSetup = msg.split(":");
-            for (int i = 1; i < initialSetup.length; i += 2) {
-                DrinkModelDao drinkDao = db.drinkDao();
+            for (int i = 1; i < initialSetup.length; i += 2)
                 drinkDao.insertAll(new DrinkModel(null, initialSetup[i], Integer.parseInt(initialSetup[i + 1])));
-
-//                Gson gson = new Gson();
-//                String jsonDrinkModel = gson.toJson(new DrinkModel(initialSetup[i], Integer.parseInt(initialSetup[i + 1])));
-//                mSecurityPreferences.storeString(Constants.ALL_DRINKS_KEYS[i], jsonDrinkModel);
-            }
         }
     }
 

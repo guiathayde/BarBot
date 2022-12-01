@@ -1,4 +1,4 @@
-package com.barbot;
+package com.barbot.model;
 
 import androidx.room.Dao;
 import androidx.room.Delete;
@@ -27,4 +27,7 @@ public interface DrinkModelDao {
 
     @Delete
     void delete(DrinkModel drink);
+
+    @Query(value = "DELETE FROM drinkmodel")
+    void deleteAll();
 }

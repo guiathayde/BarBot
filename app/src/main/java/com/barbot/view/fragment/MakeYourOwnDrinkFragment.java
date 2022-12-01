@@ -1,4 +1,4 @@
-package com.barbot;
+package com.barbot.view.fragment;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -8,11 +8,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
+import androidx.room.Room;
 import android.os.IBinder;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -23,15 +22,24 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import com.barbot.constant.Constants;
+import com.barbot.R;
+import com.barbot.SecurityPreferences;
+import com.barbot.bluetooth.SerialListener;
+import com.barbot.bluetooth.SerialService;
+import com.barbot.bluetooth.SerialSocket;
+import com.barbot.bluetooth.TextUtil;
+import com.barbot.database.AppDatabase;
+import com.barbot.model.DrinkModel;
+import com.barbot.model.DrinkModelDao;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.gson.Gson;
-
-import java.util.ArrayList;
+import java.util.List;
 
 public class MakeYourOwnDrinkFragment extends Fragment implements ServiceConnection, SerialListener {
 
     private SecurityPreferences mSecurityPreferences;
+
+    AppDatabase db;
 
     private enum Connected {False, Pending, True}
 
@@ -40,7 +48,6 @@ public class MakeYourOwnDrinkFragment extends Fragment implements ServiceConnect
 
     private MakeYourOwnDrinkFragment.Connected connected = MakeYourOwnDrinkFragment.Connected.False;
     private boolean initialStart = true;
-    private final String newline = TextUtil.newline_crlf;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -48,6 +55,9 @@ public class MakeYourOwnDrinkFragment extends Fragment implements ServiceConnect
         setRetainInstance(true);
 
         mSecurityPreferences = new SecurityPreferences(getContext());
+
+        db = Room.databaseBuilder(getActivity().getApplicationContext(),
+                AppDatabase.class, Constants.DATABASE_NAME).allowMainThreadQueries().build();
 
         deviceAddress = mSecurityPreferences.getStoredString("device");
     }
@@ -57,12 +67,10 @@ public class MakeYourOwnDrinkFragment extends Fragment implements ServiceConnect
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_make_your_own, container, false);
 
-        ArrayList<String> drinksNames = new ArrayList<>();
-        for (String key : Constants.ALL_DRINKS_NAMES) {
-            String drinkName = mSecurityPreferences.getStoredString(key);
-            if (drinkName.length() > 0)
-                drinksNames.add(drinkName);
-        }
+        TextView noDrinksAvailable = view.findViewById(R.id.textNoDrinksAvailable);
+
+        DrinkModelDao drinkDao = db.drinkDao();
+        List<DrinkModel> drinksStored = drinkDao.getAll();
 
         TextView[] drinksNamesTextView = {
                 view.findViewById(R.id.textDrinkOne),
@@ -72,9 +80,8 @@ public class MakeYourOwnDrinkFragment extends Fragment implements ServiceConnect
                 view.findViewById(R.id.textDrinkFive),
                 view.findViewById(R.id.textDrinkSix),
         };
-
-        for (int i = 0; i < drinksNames.size(); i++)
-            drinksNamesTextView[i].setText(drinksNames.get(i));
+        for (TextView textNameDrink : drinksNamesTextView)
+            textNameDrink.setVisibility(View.GONE);
 
         TextInputEditText[] drinksQuantitiesTextInputEditText = {
                 view.findViewById(R.id.textInputQuantityDrinkOne),
@@ -84,19 +91,31 @@ public class MakeYourOwnDrinkFragment extends Fragment implements ServiceConnect
                 view.findViewById(R.id.textInputQuantityDrinkFive),
                 view.findViewById(R.id.textInputQuantityDrinkSix),
         };
+        for (TextView textInputEditQuantityDrink : drinksQuantitiesTextInputEditText)
+            textInputEditQuantityDrink.setVisibility(View.GONE);
+
+        for (int i = 0; i < drinksStored.size(); i++) {
+            drinksNamesTextView[i].setText(drinksStored.get(i).getName());
+            drinksNamesTextView[i].setVisibility(View.VISIBLE);
+            drinksQuantitiesTextInputEditText[i].setVisibility(View.VISIBLE);
+        }
 
         Button makeYourOwnDrinkButton = view.findViewById(R.id.buttonMakeYourOwnDrink);
         makeYourOwnDrinkButton.setOnClickListener(v -> {
             StringBuilder message = new StringBuilder();
-            for (int i = 0; i < drinksNames.size(); i++) {
+            for (int i = 0; i < drinksStored.size(); i++) {
                 if (i == 0)
-                    message.append(drinksNames.get(i)).append(":").append(drinksQuantitiesTextInputEditText[i].getText().toString());
+                    message.append(drinksStored.get(i)).append(":").append(drinksQuantitiesTextInputEditText[i].getText().toString());
                 else
-                    message.append(":").append(drinksNames.get(i)).append(":").append(drinksQuantitiesTextInputEditText[i].getText().toString());
+                    message.append(":").append(drinksStored.get(i)).append(":").append(drinksQuantitiesTextInputEditText[i].getText().toString());
             }
 
             send(message.toString());
         });
+        if (drinksStored.size() == 0) {
+            makeYourOwnDrinkButton.setVisibility(View.GONE);
+            noDrinksAvailable.setVisibility(View.VISIBLE);
+        }
 
         return view;
     }
@@ -193,6 +212,7 @@ public class MakeYourOwnDrinkFragment extends Fragment implements ServiceConnect
             String msg;
             byte[] data;
             boolean hexEnabled = false;
+            String newline = TextUtil.newline_crlf;
             if (hexEnabled) {
                 StringBuilder sb = new StringBuilder();
                 TextUtil.toHexString(sb, TextUtil.fromHexString(str));
@@ -221,9 +241,6 @@ public class MakeYourOwnDrinkFragment extends Fragment implements ServiceConnect
         spn.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.colorStatusText)), 0, spn.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
-    /*
-     * SerialListener
-     */
     @Override
     public void onSerialConnect() {
         status("connected");

@@ -1,23 +1,27 @@
-package com.barbot;
+package com.barbot.view.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.barbot.R;
+import com.barbot.model.DrinkListModel;
+
 import java.util.List;
 
-public class IngredientRecyclerViewAdapter extends RecyclerView.Adapter<IngredientRecyclerViewAdapter.ViewHolder> {
+public class DrinkListRecyclerViewAdapter extends RecyclerView.Adapter<DrinkListRecyclerViewAdapter.ViewHolder> {
 
-    private List<DrinkListModel.Ingredient> mData;
+    private List<DrinkListModel> mData;
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
-    IngredientRecyclerViewAdapter(Context context, List<DrinkListModel.Ingredient> data) {
+    public DrinkListRecyclerViewAdapter(Context context, List<DrinkListModel> data) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
     }
@@ -25,15 +29,16 @@ public class IngredientRecyclerViewAdapter extends RecyclerView.Adapter<Ingredie
     // inflates the row layout from xml when needed
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.recyclerview_ingredients, parent, false);
+        View view = mInflater.inflate(R.layout.recyclerview_drinks_list, parent, false);
         return new ViewHolder(view);
     }
 
     // binds the data to the TextView in each row
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        DrinkListModel.Ingredient ingredient = mData.get(position);
-        holder.ingredientTextView.setText(ingredient.getQuantity().toString() + " ml de " + ingredient.getName());
+        DrinkListModel drink = mData.get(position);
+        holder.drinkImageView.setImageResource(drink.getDrinkImageResourceId());
+        holder.drinkNameTextView.setText(drink.getDrinkName());
     }
 
     // total number of rows
@@ -45,11 +50,13 @@ public class IngredientRecyclerViewAdapter extends RecyclerView.Adapter<Ingredie
 
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView ingredientTextView;
+        ImageView drinkImageView;
+        TextView drinkNameTextView;
 
         ViewHolder(View itemView) {
             super(itemView);
-            ingredientTextView = itemView.findViewById(R.id.textIngredient);
+            drinkImageView = itemView.findViewById(R.id.imageDrink);
+            drinkNameTextView = itemView.findViewById(R.id.textDrinkName);
             itemView.setOnClickListener(this);
         }
 
@@ -60,12 +67,12 @@ public class IngredientRecyclerViewAdapter extends RecyclerView.Adapter<Ingredie
     }
 
     // convenience method for getting data at click position
-    DrinkListModel.Ingredient getItem(int id) {
+    public DrinkListModel getItem(int id) {
         return mData.get(id);
     }
 
     // allows clicks events to be caught
-    void setClickListener(ItemClickListener itemClickListener) {
+    public void setClickListener(ItemClickListener itemClickListener) {
         this.mClickListener = itemClickListener;
     }
 
