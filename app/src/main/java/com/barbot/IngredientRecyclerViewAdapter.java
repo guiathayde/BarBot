@@ -12,12 +12,12 @@ import java.util.List;
 
 public class IngredientRecyclerViewAdapter extends RecyclerView.Adapter<IngredientRecyclerViewAdapter.ViewHolder> {
 
-    private List<String> mData;
+    private List<DrinkListModel.Ingredient> mData;
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
-    IngredientRecyclerViewAdapter(Context context, List<String> data) {
+    IngredientRecyclerViewAdapter(Context context, List<DrinkListModel.Ingredient> data) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
     }
@@ -32,8 +32,8 @@ public class IngredientRecyclerViewAdapter extends RecyclerView.Adapter<Ingredie
     // binds the data to the TextView in each row
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        String animal = mData.get(position);
-        holder.ingredientTextView.setText(animal);
+        DrinkListModel.Ingredient ingredient = mData.get(position);
+        holder.ingredientTextView.setText(ingredient.getQuantity().toString() + " ml de " + ingredient.getName());
     }
 
     // total number of rows
@@ -60,7 +60,7 @@ public class IngredientRecyclerViewAdapter extends RecyclerView.Adapter<Ingredie
     }
 
     // convenience method for getting data at click position
-    String getItem(int id) {
+    DrinkListModel.Ingredient getItem(int id) {
         return mData.get(id);
     }
 

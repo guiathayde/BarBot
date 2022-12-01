@@ -286,6 +286,7 @@ public class DrinksSetupFragment extends Fragment implements ServiceConnection, 
     public void onSerialConnectError(Exception e) {
         status("connection failed: " + e.getMessage());
         disconnect();
+        Toast.makeText(getContext(), "connection failed", Toast.LENGTH_LONG).show();
     }
 
     @Override

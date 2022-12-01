@@ -10,6 +10,15 @@ class Constants {
     // values have to be unique within each app
     static final int NOTIFY_MANAGER_START_FOREGROUND_SERVICE = 1001;
 
+    static final String DATABASE_NAME = "barbot";
+
+    static final String DRINK_ONE = "drinkOne";
+    static final String DRINK_TWO = "drinkTwo";
+    static final String DRINK_THREE = "drinkThree";
+    static final String DRINK_FOUR = "drinkFour";
+    static final String DRINK_FIVE = "drinkFive";
+    static final String DRINK_SIX = "drinkSix";
+
     static final String DRINK_ONE_NAME = "drinkOneName";
     static final String DRINK_TWO_NAME = "drinkTwoName";
     static final String DRINK_THREE_NAME = "drinkThreeName";
@@ -23,6 +32,15 @@ class Constants {
     static final String DRINK_FOUR_QUANTITY = "drinkFourQuantity";
     static final String DRINK_FIVE_QUANTITY = "drinkFiveQuantity";
     static final String DRINK_SIX_QUANTITY = "drinkSixQuantity";
+
+    static final String[] ALL_DRINKS_KEYS = {
+            DRINK_ONE,
+            DRINK_TWO,
+            DRINK_THREE,
+            DRINK_FOUR,
+            DRINK_FIVE,
+            DRINK_SIX,
+    };
 
     static final String[] ALL_DRINKS_NAMES = {
             DRINK_ONE_NAME,

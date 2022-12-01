@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.Room;
 
 import android.os.IBinder;
 import android.text.Spannable;
@@ -32,10 +33,13 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class DrinksListFragment extends Fragment implements ServiceConnection, SerialListener {
 
     SecurityPreferences mSecurityPreferences;
+
+    AppDatabase db;
 
     DrinkListRecyclerViewAdapter adapter;
 
@@ -57,6 +61,9 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
         mSecurityPreferences = new SecurityPreferences(getContext());
 
         deviceAddress = mSecurityPreferences.getStoredString("device");
+
+        db = Room.databaseBuilder(getActivity().getApplicationContext(),
+                AppDatabase.class, Constants.DATABASE_NAME).build();
     }
 
     @Override
@@ -124,7 +131,7 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
         service = null;
     }
 
-    private void storeDrinkInformationInSecurityPreferences(Integer drinkResourceImageId, String drinkName, ArrayList<String> ingredients) {
+    private void storeDrinkInformationInSecurityPreferences(Integer drinkResourceImageId, String drinkName, ArrayList<DrinkListModel.Ingredient> ingredients) {
         mSecurityPreferences.storeString("drinkResourceImageId", drinkResourceImageId.toString());
         mSecurityPreferences.storeString("drinkName", drinkName);
 
@@ -152,82 +159,73 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
     }
 
     private void renderDrinksList(View view) {
-        ArrayList<String> caipirinhaIngredients = new ArrayList<>();
-        caipirinhaIngredients.add("50 ml de Vodka");
-        caipirinhaIngredients.add("150 ml de Suco de limão");
+        ArrayList<DrinkListModel.Ingredient> caipirinhaIngredients = new ArrayList<>();
+        caipirinhaIngredients.add(new DrinkListModel.Ingredient("Vodka", 50));
+        caipirinhaIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 150));
 
-//        ArrayList<DrinkListModel.Ingredient> caipirinhaIngredients = new ArrayList<>();
-//        caipirinhaIngredients.add(new DrinkListModel.Ingredient("Vodka", 50));
-//        caipirinhaIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 150));
+        ArrayList<DrinkListModel.Ingredient> blueLagoonIngredients = new ArrayList<>();
+        blueLagoonIngredients.add(new DrinkListModel.Ingredient("Vodka", 50));
+        blueLagoonIngredients.add(new DrinkListModel.Ingredient("Licor de Curaçau Blue", 25));
+        blueLagoonIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 150));
 
-        ArrayList<String> blueLagoonIngredients = new ArrayList<>();
-        blueLagoonIngredients.add("50 ml de Vodka");
-        blueLagoonIngredients.add("25 ml de Licor de Curaçau Blue");
-        blueLagoonIngredients.add("150 ml de Suco de limão");
+        ArrayList<DrinkListModel.Ingredient> cosmoIngredients = new ArrayList<>();
+        cosmoIngredients.add(new DrinkListModel.Ingredient("Vodka", 40));
+        cosmoIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 30));
+        cosmoIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 15));
 
-        ArrayList<String> cosmoIngredients = new ArrayList<>();
-        cosmoIngredients.add("40 ml de Vodka");
-        cosmoIngredients.add("30 ml de Xarope de cranberry");
-        cosmoIngredients.add("15 ml de Suco de limão");
+        ArrayList<DrinkListModel.Ingredient> lemonDropIngredients = new ArrayList<>();
+        lemonDropIngredients.add(new DrinkListModel.Ingredient("Vodka", 50));
+        lemonDropIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 30));
+        lemonDropIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 30));
 
-        ArrayList<String> lemonDropIngredients = new ArrayList<>();
-        lemonDropIngredients.add("50 ml de Vodka");
-        lemonDropIngredients.add("30 ml de Suco de limão");
-        lemonDropIngredients.add("30 ml de Água com açúcar");
+        ArrayList<DrinkListModel.Ingredient> blueMoonIngredients = new ArrayList<>();
+        lemonDropIngredients.add(new DrinkListModel.Ingredient("Vodka", 30));
+        lemonDropIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 50));
+        lemonDropIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 30));
+        lemonDropIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 20));
+        lemonDropIngredients.add(new DrinkListModel.Ingredient("Licor Curuaçau Blue Stock", 20));
 
-        ArrayList<String> blueMoonIngredients = new ArrayList<>();
-        blueMoonIngredients.add("30 ml de Vodka");
-        blueMoonIngredients.add("50 ml de Xarope de cranberry");
-        blueMoonIngredients.add("30 ml de Suco de limão");
-        blueMoonIngredients.add("20 ml de Água com açúcar");
-        blueMoonIngredients.add("20 ml de Licor Curuaçau Blue Stock");
+        ArrayList<DrinkListModel.Ingredient> blueGinMoonIngredients = new ArrayList<>();
+        blueGinMoonIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 50));
+        blueGinMoonIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 30));
+        blueGinMoonIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 20));
+        blueGinMoonIngredients.add(new DrinkListModel.Ingredient("Licor Curuaçau Blue Stock", 20));
+        blueGinMoonIngredients.add(new DrinkListModel.Ingredient("Gin", 30));
 
-        ArrayList<String> blueGinMoonIngredients = new ArrayList<>();
-        blueGinMoonIngredients.add("50 ml de Xarope de cranberry");
-        blueGinMoonIngredients.add("30 ml de Suco de limão");
-        blueGinMoonIngredients.add("20 ml de Água com açúcar");
-        blueGinMoonIngredients.add("20 ml de Licor Curuaçau Blue Stock");
-        blueGinMoonIngredients.add("30 ml de Gin");
+        ArrayList<DrinkListModel.Ingredient> doubleStrikeIngredients = new ArrayList<>();
+        doubleStrikeIngredients.add(new DrinkListModel.Ingredient("Vodka", 30));
+        doubleStrikeIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 50));
+        doubleStrikeIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 30));
+        doubleStrikeIngredients.add(new DrinkListModel.Ingredient("Licor Curuaçau Blue Stock", 20));
 
-        ArrayList<String> doubleStrikeIngredients = new ArrayList<>();
-        doubleStrikeIngredients.add("30 ml de Vodka");
-        doubleStrikeIngredients.add("50 ml de Xarope de cranberry");
-        doubleStrikeIngredients.add("30 ml de Suco de limão");
-        doubleStrikeIngredients.add("20 ml de Licor Curuaçau Blue Stock");
+        ArrayList<DrinkListModel.Ingredient> tomCollinsIngredients = new ArrayList<>();
+        tomCollinsIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 30));
+        tomCollinsIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 30));
+        tomCollinsIngredients.add(new DrinkListModel.Ingredient("Gin", 35));
 
-        ArrayList<String> tomCollinsIngredients = new ArrayList<>();
-        tomCollinsIngredients.add("30 ml de Suco de limão");
-        tomCollinsIngredients.add("30 ml de Água com açúcar");
-        tomCollinsIngredients.add("35 ml de Gin");
+        ArrayList<DrinkListModel.Ingredient> flyingDutchmanIngredients = new ArrayList<>();
+        flyingDutchmanIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 20));
+        flyingDutchmanIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 15));
+        flyingDutchmanIngredients.add(new DrinkListModel.Ingredient("Gin", 30));
 
-        ArrayList<String> flyingDutchmanIngredients = new ArrayList<>();
-        flyingDutchmanIngredients.add("20 ml de Suco de limão");
-        flyingDutchmanIngredients.add("15 ml de Água com açúcar");
-        flyingDutchmanIngredients.add("30 ml de Gin");
+        ArrayList<DrinkListModel.Ingredient> londonCosmoIngredients = new ArrayList<>();
+        londonCosmoIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 80));
+        londonCosmoIngredients.add(new DrinkListModel.Ingredient("Gin", 30));
 
-        ArrayList<String> londonCosmoIngredients = new ArrayList<>();
-        londonCosmoIngredients.add("80 ml de Xarope de cranberry");
-        londonCosmoIngredients.add("30 ml de Gin");
+        ArrayList<DrinkListModel.Ingredient> vodkaCranberryIngredients = new ArrayList<>();
+        vodkaCranberryIngredients.add(new DrinkListModel.Ingredient("Vodka", 30));
+        vodkaCranberryIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 80));
+        vodkaCranberryIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 20));
 
-        ArrayList<String> vodkaCranberryIngredients = new ArrayList<>();
-        vodkaCranberryIngredients.add("30 ml de Vodka");
-        vodkaCranberryIngredients.add("80 ml de Xarope de cranberry");
-        vodkaCranberryIngredients.add("20 ml de Água com açúcar");
+        ArrayList<DrinkListModel.Ingredient> cranberryGinIngredients = new ArrayList<>();
+        vodkaCranberryIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 80));
+        vodkaCranberryIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 30));
+        vodkaCranberryIngredients.add(new DrinkListModel.Ingredient("Gin", 35));
 
-        ArrayList<String> cranberryGinIngredients = new ArrayList<>();
-        cranberryGinIngredients.add("80 ml de Xarope de cranberry");
-        cranberryGinIngredients.add("30 ml de Suco de limão");
-        cranberryGinIngredients.add("35 ml de Gin");
-
-        ArrayList<String> makeYourOwnIngredients = new ArrayList<>();
+        ArrayList<DrinkListModel.Ingredient> makeYourOwnIngredients = new ArrayList<>();
 
         ArrayList<DrinkListModel> drinks = new ArrayList<>();
-        drinks.add(new DrinkListModel(
-                "Caipirinha",
-                R.drawable.caipirinha,
-                caipirinhaIngredients
-
-        ));
+        drinks.add(new DrinkListModel("Caipirinha", R.drawable.caipirinha, caipirinhaIngredients));
         drinks.add(new DrinkListModel("Blue Lagoon", R.drawable.blue_lagoon, blueLagoonIngredients));
         drinks.add(new DrinkListModel("Cosmo", R.drawable.cosmo, cosmoIngredients));
         drinks.add(new DrinkListModel("Lemon Drop", R.drawable.lemon_drop, lemonDropIngredients));
@@ -246,7 +244,7 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
         adapter = new DrinkListRecyclerViewAdapter(getContext(), drinks);
         adapter.setClickListener((v, position) -> {
             DrinkListModel drink = adapter.getItem(position);
-            storeDrinkInformationInSecurityPreferences(drink.getDrinkImageResourceId(), drink.getDrinkName(), drink.getIngredientsList());
+            storeDrinkInformationInSecurityPreferences(drink.getDrinkImageResourceId(), drink.getDrinkName(), drink.getIngredients());
             if (drink.getDrinkName() == "Faça o seu")
                 changeScreenToMakeYourOwnDrinkFragment();
             else
@@ -354,11 +352,13 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
 
         if (msg.contains("InitialSetup")) {
             String[] initialSetup = msg.split(":");
-            for (int i = 1; i < initialSetup.length; i++) {
-                if (i % 2 == 0)
-                    mSecurityPreferences.storeString(Constants.ALL_DRINKS_QUANTITY[i], initialSetup[i]);
-                else
-                    mSecurityPreferences.storeString(Constants.ALL_DRINKS_NAMES[i], initialSetup[i]);
+            for (int i = 1; i < initialSetup.length; i += 2) {
+                DrinkModelDao drinkDao = db.drinkDao();
+                drinkDao.insertAll(new DrinkModel(null, initialSetup[i], Integer.parseInt(initialSetup[i + 1])));
+
+//                Gson gson = new Gson();
+//                String jsonDrinkModel = gson.toJson(new DrinkModel(initialSetup[i], Integer.parseInt(initialSetup[i + 1])));
+//                mSecurityPreferences.storeString(Constants.ALL_DRINKS_KEYS[i], jsonDrinkModel);
             }
         }
     }
@@ -381,6 +381,7 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
     public void onSerialConnectError(Exception e) {
         status("connection failed: " + e.getMessage());
         disconnect();
+        Toast.makeText(getContext(), "connection failed", Toast.LENGTH_LONG).show();
     }
 
     @Override

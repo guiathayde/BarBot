@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.Room;
 
 import android.os.IBinder;
 import android.text.Spannable;
@@ -36,6 +37,8 @@ public class MakeDrinkFragment extends Fragment implements ServiceConnection, Se
 
     SecurityPreferences mSecurityPreferences;
 
+    AppDatabase db;
+
     private enum Connected {False, Pending, True}
 
     private String deviceAddress;
@@ -56,6 +59,9 @@ public class MakeDrinkFragment extends Fragment implements ServiceConnection, Se
 
         deviceAddress = getArguments().getString("device");
         deviceAddress = mSecurityPreferences.getStoredString("device");
+
+        db = Room.databaseBuilder(getActivity().getApplicationContext(),
+                AppDatabase.class, Constants.DATABASE_NAME).build();
     }
 
     @Override
@@ -135,10 +141,10 @@ public class MakeDrinkFragment extends Fragment implements ServiceConnection, Se
 
         String jsonIngredients = mSecurityPreferences.getStoredString("ingredients");
         Gson gson = new Gson();
-        String[] userItems = gson.fromJson(jsonIngredients,
-                String[].class);
+        DrinkListModel.Ingredient[] ingredientsItem = gson.fromJson(jsonIngredients,
+                DrinkListModel.Ingredient[].class);
 
-        ArrayList<String> ingredients = new ArrayList<>(Arrays.asList(userItems));
+        ArrayList<DrinkListModel.Ingredient> ingredients = new ArrayList<>(Arrays.asList(ingredientsItem));
 
         RecyclerView recyclerView = view.findViewById(R.id.recyclerViewIngredients);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -148,10 +154,34 @@ public class MakeDrinkFragment extends Fragment implements ServiceConnection, Se
         });
         recyclerView.setAdapter(adapter);
 
+        DrinkModelDao drinkDao = db.drinkDao();
+
         Button makeDrinkButton = view.findViewById(R.id.buttonMakeDrink);
         makeDrinkButton.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Voce clicou para fazer a bebida", Toast.LENGTH_SHORT).show();
-            send("Make " + drinkName);
+            Toast.makeText(getContext(), "Voce clicou para fazer " + drinkName, Toast.LENGTH_SHORT).show();
+
+            boolean isPossibleMakeDrink = true;
+            ArrayList<DrinkModel> drinksUpdated = new ArrayList<>();
+            for (DrinkListModel.Ingredient ingredient : ingredients) {
+                DrinkModel drink = drinkDao.findByName(ingredient.getName());
+
+                isPossibleMakeDrink = drink.quantity >= ingredient.quantity;
+
+                if (isPossibleMakeDrink) {
+                    int quantity = drink.quantity - ingredient.quantity;
+                    drinksUpdated.add(new DrinkModel(drink.uid, drink.getName(), quantity));
+                } else {
+                    break;
+                }
+            }
+
+            if (isPossibleMakeDrink) {
+                send("Make " + drinkName);
+                for (DrinkModel drinkUpdate : drinksUpdated)
+                    drinkDao.update(drinkUpdate);
+                Toast.makeText(getContext(), "Preparando drink", Toast.LENGTH_LONG).show();
+            } else
+                Toast.makeText(getContext(), "Não tem bebida suficiente", Toast.LENGTH_LONG).show();
         });
 
         return view;
@@ -226,6 +256,7 @@ public class MakeDrinkFragment extends Fragment implements ServiceConnection, Se
     public void onSerialConnectError(Exception e) {
         status("connection failed: " + e.getMessage());
         disconnect();
+        Toast.makeText(getContext(), "connection failed", Toast.LENGTH_LONG).show();
     }
 
     @Override
