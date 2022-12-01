@@ -287,8 +287,6 @@ public class DrinksSetupFragment extends Fragment implements ServiceConnection, 
 
         if (msg.contains("DrinksUpdatedSuccessfully"))
             Toast.makeText(getContext(), "Bebidas atualizadas com sucesso", Toast.LENGTH_LONG).show();
-        else if (msg.contains("FailedUpdateDrinks"))
-            Toast.makeText(getContext(), "Erro ao atualizar as bebidas", Toast.LENGTH_LONG).show();
     }
 
     private void status(String str) {

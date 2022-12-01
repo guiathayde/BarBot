@@ -8,10 +8,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.room.Room;
+
 import android.os.IBinder;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -22,6 +24,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.barbot.constant.Constants;
 import com.barbot.R;
 import com.barbot.SecurityPreferences;
@@ -33,6 +36,7 @@ import com.barbot.database.AppDatabase;
 import com.barbot.model.DrinkModel;
 import com.barbot.model.DrinkModelDao;
 import com.google.android.material.textfield.TextInputEditText;
+
 import java.util.List;
 
 public class MakeYourOwnDrinkFragment extends Fragment implements ServiceConnection, SerialListener {
@@ -103,12 +107,9 @@ public class MakeYourOwnDrinkFragment extends Fragment implements ServiceConnect
         Button makeYourOwnDrinkButton = view.findViewById(R.id.buttonMakeYourOwnDrink);
         makeYourOwnDrinkButton.setOnClickListener(v -> {
             StringBuilder message = new StringBuilder();
-            for (int i = 0; i < drinksStored.size(); i++) {
-                if (i == 0)
-                    message.append(drinksStored.get(i)).append(":").append(drinksQuantitiesTextInputEditText[i].getText().toString());
-                else
-                    message.append(":").append(drinksStored.get(i)).append(":").append(drinksQuantitiesTextInputEditText[i].getText().toString());
-            }
+            message.append("MakeYourOwnDrink");
+            for (TextInputEditText quantityInputEditText : drinksQuantitiesTextInputEditText)
+                message.append(":").append(quantityInputEditText.getText().toString());
 
             send(message.toString());
         });
