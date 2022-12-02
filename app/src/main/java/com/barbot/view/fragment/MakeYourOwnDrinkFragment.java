@@ -37,6 +37,7 @@ import com.barbot.model.DrinkModel;
 import com.barbot.model.DrinkModelDao;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MakeYourOwnDrinkFragment extends Fragment implements ServiceConnection, SerialListener {
@@ -108,11 +109,39 @@ public class MakeYourOwnDrinkFragment extends Fragment implements ServiceConnect
         makeYourOwnDrinkButton.setOnClickListener(v -> {
             StringBuilder message = new StringBuilder();
             message.append("MakeYourOwnDrink");
-            for (TextInputEditText quantityInputEditText : drinksQuantitiesTextInputEditText)
-                message.append(":").append(quantityInputEditText.getText().toString());
 
-            send(message.toString());
+            boolean isPossibleMakeDrink = true;
+            ArrayList<DrinkModel> drinksUpdated = new ArrayList<>();
+            for (int i = 0; i < drinksNamesTextView.length; i++) {
+                int quantity = Integer.parseInt(drinksQuantitiesTextInputEditText[i].getText().toString());
+
+                if (quantity > 0) {
+                    DrinkModel drink = drinkDao.findByName(drinksNamesTextView[i].getText().toString());
+                    isPossibleMakeDrink = drink.quantity >= quantity;
+
+                    if (isPossibleMakeDrink) {
+                        int quantityUpdated = drink.quantity - quantity;
+                        drinksUpdated.add(new DrinkModel(drink.uid, drink.getName(), quantityUpdated));
+                    } else {
+                        break;
+                    }
+                }
+            }
+
+            if (isPossibleMakeDrink) {
+                for (TextInputEditText quantityTextInputEdit : drinksQuantitiesTextInputEditText)
+                    message.append(":").append(quantityTextInputEdit.getText().toString());
+
+                send(message.toString());
+
+                for (DrinkModel drinkUpdate : drinksUpdated)
+                    drinkDao.update(drinkUpdate);
+
+                Toast.makeText(getContext(), "Preparando drink", Toast.LENGTH_LONG).show();
+            } else
+                Toast.makeText(getContext(), "Não tem bebida suficiente", Toast.LENGTH_LONG).show();
         });
+
         if (drinksStored.size() == 0) {
             makeYourOwnDrinkButton.setVisibility(View.GONE);
             noDrinksAvailable.setVisibility(View.VISIBLE);

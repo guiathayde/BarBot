@@ -189,11 +189,11 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
         lemonDropIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 30));
 
         ArrayList<DrinkListModel.Ingredient> blueMoonIngredients = new ArrayList<>();
-        lemonDropIngredients.add(new DrinkListModel.Ingredient("Vodka", 30));
-        lemonDropIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 50));
-        lemonDropIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 30));
-        lemonDropIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 20));
-        lemonDropIngredients.add(new DrinkListModel.Ingredient("Licor Curuaçau Blue Stock", 20));
+        blueMoonIngredients.add(new DrinkListModel.Ingredient("Vodka", 30));
+        blueMoonIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 50));
+        blueMoonIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 30));
+        blueMoonIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 20));
+        blueMoonIngredients.add(new DrinkListModel.Ingredient("Licor Curuaçau Blue Stock", 20));
 
         ArrayList<DrinkListModel.Ingredient> blueGinMoonIngredients = new ArrayList<>();
         blueGinMoonIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 50));

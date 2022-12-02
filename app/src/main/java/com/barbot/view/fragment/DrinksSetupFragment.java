@@ -72,6 +72,19 @@ public class DrinksSetupFragment extends Fragment implements ServiceConnection, 
 
     Button buttonSave;
 
+    String nameDrinkOne;
+    String quantityDrinkOne;
+    String nameDrinkTwo;
+    String quantityDrinkTwo;
+    String nameDrinkThree;
+    String quantityDrinkThree;
+    String nameDrinkFour;
+    String quantityDrinkFour;
+    String nameDrinkFive;
+    String quantityDrinkFive;
+    String nameDrinkSix;
+    String quantityDrinkSix;
+
     public DrinksSetupFragment() {
     }
 
@@ -210,27 +223,42 @@ public class DrinksSetupFragment extends Fragment implements ServiceConnection, 
     }
 
     private void sendDrinksSetup() {
-        String nameDrinkOne = inputFieldNameDrinkOne.getText().toString();
-        String quantityDrinkOne = inputFieldQuantityDrinkOne.getText().toString();
+        nameDrinkOne = inputFieldNameDrinkOne.getText().toString();
+        quantityDrinkOne = inputFieldQuantityDrinkOne.getText().toString();
 
-        String nameDrinkTwo = inputFieldNameDrinkTwo.getText().toString();
-        String quantityDrinkTwo = inputFieldQuantityDrinkTwo.getText().toString();
+        nameDrinkTwo = inputFieldNameDrinkTwo.getText().toString();
+        quantityDrinkTwo = inputFieldQuantityDrinkTwo.getText().toString();
 
-        String nameDrinkThree = inputFieldNameDrinkThree.getText().toString();
-        String quantityDrinkThree = inputFieldQuantityDrinkThree.getText().toString();
+        nameDrinkThree = inputFieldNameDrinkThree.getText().toString();
+        quantityDrinkThree = inputFieldQuantityDrinkThree.getText().toString();
 
-        String nameDrinkFour = inputFieldNameDrinkFour.getText().toString();
-        String quantityDrinkFour = inputFieldQuantityDrinkFour.getText().toString();
+        nameDrinkFour = inputFieldNameDrinkFour.getText().toString();
+        quantityDrinkFour = inputFieldQuantityDrinkFour.getText().toString();
 
-        String nameDrinkFive = inputFieldNameDrinkFive.getText().toString();
-        String quantityDrinkFive = inputFieldQuantityDrinkFive.getText().toString();
+        nameDrinkFive = inputFieldNameDrinkFive.getText().toString();
+        quantityDrinkFive = inputFieldQuantityDrinkFive.getText().toString();
 
-        String nameDrinkSix = inputFieldNameDrinkSix.getText().toString();
-        String quantityDrinkSix = inputFieldQuantityDrinkSix.getText().toString();
+        nameDrinkSix = inputFieldNameDrinkSix.getText().toString();
+        quantityDrinkSix = inputFieldQuantityDrinkSix.getText().toString();
 
         String data = "DrinkSetup" + ":" + nameDrinkOne + ":" + quantityDrinkOne + ":" + nameDrinkTwo + ":" + quantityDrinkTwo + ":" + nameDrinkThree + ":" + quantityDrinkThree + ":" + nameDrinkFour + ":" + quantityDrinkFour + ":" + nameDrinkFive + ":" + quantityDrinkFive + ":" + nameDrinkSix + ":" + quantityDrinkSix;
 
         send(data);
+    }
+
+    private void storeDrinksSetup() {
+        DrinkModelDao drinkDao = db.drinkDao();
+
+        ArrayList<DrinkModel> drinksSetup = new ArrayList<>();
+        drinksSetup.add(new DrinkModel(null, nameDrinkOne, Integer.parseInt(quantityDrinkOne)));
+        drinksSetup.add(new DrinkModel(null, nameDrinkTwo, Integer.parseInt(quantityDrinkTwo)));
+        drinksSetup.add(new DrinkModel(null, nameDrinkThree, Integer.parseInt(quantityDrinkThree)));
+        drinksSetup.add(new DrinkModel(null, nameDrinkFour, Integer.parseInt(quantityDrinkFour)));
+        drinksSetup.add(new DrinkModel(null, nameDrinkFive, Integer.parseInt(quantityDrinkFive)));
+        drinksSetup.add(new DrinkModel(null, nameDrinkSix, Integer.parseInt(quantityDrinkSix)));
+
+        for (DrinkModel drink : drinksSetup)
+            drinkDao.insertAll(drink);
     }
 
     /*
@@ -285,8 +313,10 @@ public class DrinksSetupFragment extends Fragment implements ServiceConnection, 
     private void receive(byte[] data) {
         String msg = new String(data);
 
-        if (msg.contains("DrinksUpdatedSuccessfully"))
+        if (msg.contains("DrinksUpdatedSuccessfully")) {
             Toast.makeText(getContext(), "Bebidas atualizadas com sucesso", Toast.LENGTH_LONG).show();
+            storeDrinksSetup();
+        }
     }
 
     private void status(String str) {
