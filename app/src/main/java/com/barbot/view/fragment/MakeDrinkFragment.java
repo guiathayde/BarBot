@@ -176,19 +176,27 @@ public class MakeDrinkFragment extends Fragment implements ServiceConnection, Se
             ArrayList<DrinkModel> drinksUpdated = new ArrayList<>();
             for (DrinkListModel.Ingredient ingredient : ingredients) {
                 DrinkModel drink = drinkDao.findByName(ingredient.getName());
+                if (drink != null) {
+                    isPossibleMakeDrink = drink.quantity >= ingredient.getQuantity();
 
-                isPossibleMakeDrink = drink.quantity >= ingredient.getQuantity();
-
-                if (isPossibleMakeDrink) {
-                    int quantity = drink.quantity - ingredient.getQuantity();
-                    drinksUpdated.add(new DrinkModel(drink.uid, drink.getName(), quantity));
+                    if (isPossibleMakeDrink) {
+                        int quantity = drink.quantity - ingredient.getQuantity();
+                        drinksUpdated.add(new DrinkModel(drink.uid, drink.getName(), quantity));
+                    } else {
+                        break;
+                    }
                 } else {
+                    isPossibleMakeDrink = false;
                     break;
                 }
             }
 
             if (isPossibleMakeDrink) {
-                send("Make " + drinkName);
+                StringBuilder msg = new StringBuilder();
+                msg.append("Make ");
+                msg.append(drinkName);
+                msg.append("#");
+                send(msg.toString());
                 for (DrinkModel drinkUpdate : drinksUpdated)
                     drinkDao.update(drinkUpdate);
                 Toast.makeText(getContext(), "Preparando drink", Toast.LENGTH_LONG).show();

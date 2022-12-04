@@ -11,15 +11,19 @@ public class DrinkListModel {
     public static class Ingredient {
         String name;
         Integer quantity;
+        Integer bomb;
 
-        public Ingredient(String name, Integer quantity) {
+        public Ingredient(String name, Integer quantity, Integer bomb) {
             this.name = name;
             this.quantity = quantity;
+            this.bomb = bomb;
         }
 
         public String getName() { return name; }
 
         public Integer getQuantity() { return quantity; }
+
+        public Integer getBomb() { return bomb; }
     }
 
     public DrinkListModel(String drinkName, Integer drinkImageResourceId, ArrayList<Ingredient> ingredients) {

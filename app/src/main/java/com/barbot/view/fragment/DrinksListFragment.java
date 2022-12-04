@@ -170,67 +170,67 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
 
     private void renderDrinksList(View view) {
         ArrayList<DrinkListModel.Ingredient> caipirinhaIngredients = new ArrayList<>();
-        caipirinhaIngredients.add(new DrinkListModel.Ingredient("Vodka", 50));
-        caipirinhaIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 150));
+        caipirinhaIngredients.add(new DrinkListModel.Ingredient("Vodka", 50, 1));
+        caipirinhaIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 100, 3));
 
         ArrayList<DrinkListModel.Ingredient> blueLagoonIngredients = new ArrayList<>();
-        blueLagoonIngredients.add(new DrinkListModel.Ingredient("Vodka", 50));
-        blueLagoonIngredients.add(new DrinkListModel.Ingredient("Licor de Curaçau Blue", 25));
-        blueLagoonIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 150));
+        blueLagoonIngredients.add(new DrinkListModel.Ingredient("Vodka", 50, 1));
+        blueLagoonIngredients.add(new DrinkListModel.Ingredient("Licor Curaçau Blue Stock", 25, 5));
+        blueLagoonIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 150, 3));
 
         ArrayList<DrinkListModel.Ingredient> cosmoIngredients = new ArrayList<>();
-        cosmoIngredients.add(new DrinkListModel.Ingredient("Vodka", 40));
-        cosmoIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 30));
-        cosmoIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 15));
+        cosmoIngredients.add(new DrinkListModel.Ingredient("Vodka", 40, 1));
+        cosmoIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 30, 2));
+        cosmoIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 15, 3));
 
         ArrayList<DrinkListModel.Ingredient> lemonDropIngredients = new ArrayList<>();
-        lemonDropIngredients.add(new DrinkListModel.Ingredient("Vodka", 50));
-        lemonDropIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 30));
-        lemonDropIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 30));
+        lemonDropIngredients.add(new DrinkListModel.Ingredient("Vodka", 50, 1));
+        lemonDropIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 30, 3));
+        lemonDropIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 30, 4));
 
         ArrayList<DrinkListModel.Ingredient> blueMoonIngredients = new ArrayList<>();
-        blueMoonIngredients.add(new DrinkListModel.Ingredient("Vodka", 30));
-        blueMoonIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 50));
-        blueMoonIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 30));
-        blueMoonIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 20));
-        blueMoonIngredients.add(new DrinkListModel.Ingredient("Licor Curuaçau Blue Stock", 20));
+        blueMoonIngredients.add(new DrinkListModel.Ingredient("Vodka", 30, 1));
+        blueMoonIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 50, 2));
+        blueMoonIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 30, 3));
+        blueMoonIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 20, 4));
+        blueMoonIngredients.add(new DrinkListModel.Ingredient("Licor Curaçau Blue Stock", 20, 5));
 
         ArrayList<DrinkListModel.Ingredient> blueGinMoonIngredients = new ArrayList<>();
-        blueGinMoonIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 50));
-        blueGinMoonIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 30));
-        blueGinMoonIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 20));
-        blueGinMoonIngredients.add(new DrinkListModel.Ingredient("Licor Curuaçau Blue Stock", 20));
-        blueGinMoonIngredients.add(new DrinkListModel.Ingredient("Gin", 30));
+        blueGinMoonIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 50, 2));
+        blueGinMoonIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 30, 3));
+        blueGinMoonIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 20, 4));
+        blueGinMoonIngredients.add(new DrinkListModel.Ingredient("Licor Curaçau Blue Stock", 20, 5));
+        blueGinMoonIngredients.add(new DrinkListModel.Ingredient("Gin", 30, 6));
 
         ArrayList<DrinkListModel.Ingredient> doubleStrikeIngredients = new ArrayList<>();
-        doubleStrikeIngredients.add(new DrinkListModel.Ingredient("Vodka", 30));
-        doubleStrikeIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 50));
-        doubleStrikeIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 30));
-        doubleStrikeIngredients.add(new DrinkListModel.Ingredient("Licor Curuaçau Blue Stock", 20));
+        doubleStrikeIngredients.add(new DrinkListModel.Ingredient("Vodka", 30, 1));
+        doubleStrikeIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 50, 2));
+        doubleStrikeIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 30, 3));
+        doubleStrikeIngredients.add(new DrinkListModel.Ingredient("Licor Curaçau Blue Stock", 20, 5));
 
         ArrayList<DrinkListModel.Ingredient> tomCollinsIngredients = new ArrayList<>();
-        tomCollinsIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 30));
-        tomCollinsIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 30));
-        tomCollinsIngredients.add(new DrinkListModel.Ingredient("Gin", 35));
+        tomCollinsIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 30, 3));
+        tomCollinsIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 30, 4));
+        tomCollinsIngredients.add(new DrinkListModel.Ingredient("Gin", 35, 6));
 
         ArrayList<DrinkListModel.Ingredient> flyingDutchmanIngredients = new ArrayList<>();
-        flyingDutchmanIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 20));
-        flyingDutchmanIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 15));
-        flyingDutchmanIngredients.add(new DrinkListModel.Ingredient("Gin", 30));
+        flyingDutchmanIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 20, 3));
+        flyingDutchmanIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 15, 4));
+        flyingDutchmanIngredients.add(new DrinkListModel.Ingredient("Gin", 30, 6));
 
         ArrayList<DrinkListModel.Ingredient> londonCosmoIngredients = new ArrayList<>();
-        londonCosmoIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 80));
-        londonCosmoIngredients.add(new DrinkListModel.Ingredient("Gin", 30));
+        londonCosmoIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 80, 2));
+        londonCosmoIngredients.add(new DrinkListModel.Ingredient("Gin", 30, 6));
 
         ArrayList<DrinkListModel.Ingredient> vodkaCranberryIngredients = new ArrayList<>();
-        vodkaCranberryIngredients.add(new DrinkListModel.Ingredient("Vodka", 30));
-        vodkaCranberryIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 80));
-        vodkaCranberryIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 20));
+        vodkaCranberryIngredients.add(new DrinkListModel.Ingredient("Vodka", 30, 1));
+        vodkaCranberryIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 80, 2));
+        vodkaCranberryIngredients.add(new DrinkListModel.Ingredient("Água com açúcar", 20, 4));
 
-        ArrayList<DrinkListModel.Ingredient> cranberryGinIngredients = new ArrayList<>();
-        vodkaCranberryIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 80));
-        vodkaCranberryIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 30));
-        vodkaCranberryIngredients.add(new DrinkListModel.Ingredient("Gin", 35));
+        ArrayList<DrinkListModel.Ingredient> cranberryGinIngredients = new ArrayList<>(); // Vodka - 1, CranberryJuice - 2, LemonJuice - 3, SugarWater - 4, BlueCur - 5, Gin - 6
+        cranberryGinIngredients.add(new DrinkListModel.Ingredient("Xarope de cranberry", 80, 2));
+        cranberryGinIngredients.add(new DrinkListModel.Ingredient("Suco de limão", 30, 3));
+        cranberryGinIngredients.add(new DrinkListModel.Ingredient("Gin", 35, 6));
 
         ArrayList<DrinkListModel.Ingredient> makeYourOwnIngredients = new ArrayList<>();
 

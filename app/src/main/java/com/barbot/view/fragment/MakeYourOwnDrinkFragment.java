@@ -113,17 +113,20 @@ public class MakeYourOwnDrinkFragment extends Fragment implements ServiceConnect
             boolean isPossibleMakeDrink = true;
             ArrayList<DrinkModel> drinksUpdated = new ArrayList<>();
             for (int i = 0; i < drinksNamesTextView.length; i++) {
-                int quantity = Integer.parseInt(drinksQuantitiesTextInputEditText[i].getText().toString());
+                String quantityString = drinksQuantitiesTextInputEditText[i].getText().toString();
+                if (quantityString.length() > 0) {
+                    int quantity = Integer.parseInt(quantityString);
 
-                if (quantity > 0) {
-                    DrinkModel drink = drinkDao.findByName(drinksNamesTextView[i].getText().toString());
-                    isPossibleMakeDrink = drink.quantity >= quantity;
+                    if (quantity > 0) {
+                        DrinkModel drink = drinkDao.findByName(drinksNamesTextView[i].getText().toString());
+                        isPossibleMakeDrink = drink.quantity >= quantity;
 
-                    if (isPossibleMakeDrink) {
-                        int quantityUpdated = drink.quantity - quantity;
-                        drinksUpdated.add(new DrinkModel(drink.uid, drink.getName(), quantityUpdated));
-                    } else {
-                        break;
+                        if (isPossibleMakeDrink) {
+                            int quantityUpdated = drink.quantity - quantity;
+                            drinksUpdated.add(new DrinkModel(drink.uid, drink.getName(), quantityUpdated));
+                        } else {
+                            break;
+                        }
                     }
                 }
             }
@@ -131,6 +134,8 @@ public class MakeYourOwnDrinkFragment extends Fragment implements ServiceConnect
             if (isPossibleMakeDrink) {
                 for (TextInputEditText quantityTextInputEdit : drinksQuantitiesTextInputEditText)
                     message.append(":").append(quantityTextInputEdit.getText().toString());
+
+                message.append("#");
 
                 send(message.toString());
 
@@ -276,7 +281,6 @@ public class MakeYourOwnDrinkFragment extends Fragment implements ServiceConnect
         status("connected");
         connected = MakeYourOwnDrinkFragment.Connected.True;
         Toast.makeText(getContext(), "Bluetooth conectado", Toast.LENGTH_LONG).show();
-        send("First message#");
     }
 
     @Override

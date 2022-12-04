@@ -37,6 +37,7 @@ public class IngredientRecyclerViewAdapter extends RecyclerView.Adapter<Ingredie
     public void onBindViewHolder(ViewHolder holder, int position) {
         DrinkListModel.Ingredient ingredient = mData.get(position);
         holder.ingredientTextView.setText(ingredient.getQuantity().toString() + " ml de " + ingredient.getName());
+        holder.bombTextView.setText("- " + ingredient.getBomb().toString());
     }
 
     // total number of rows
@@ -49,10 +50,12 @@ public class IngredientRecyclerViewAdapter extends RecyclerView.Adapter<Ingredie
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView ingredientTextView;
+        TextView bombTextView;
 
         ViewHolder(View itemView) {
             super(itemView);
             ingredientTextView = itemView.findViewById(R.id.textIngredient);
+            bombTextView = itemView.findViewById(R.id.textBomb);
             itemView.setOnClickListener(this);
         }
 

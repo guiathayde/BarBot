@@ -44,7 +44,7 @@
             android:id="@+id/textFieldQuantityDrinkOne"
             android:layout_width="180dp"
             android:layout_height="wrap_content"
-            android:hint="Quantidade"
+            android:hint="Quantidade em ml"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/textFieldNameDrinkOne"
             app:layout_constraintTop_toBottomOf="@+id/textDrinkOne">
@@ -88,7 +88,7 @@
             android:id="@+id/textFieldQuantityDrinkTwo"
             android:layout_width="180dp"
             android:layout_height="wrap_content"
-            android:hint="Quantidade"
+            android:hint="Quantidade em ml"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/textFieldNameDrinkTwo"
             app:layout_constraintTop_toBottomOf="@+id/textDrinkTwo">
@@ -132,7 +132,7 @@
             android:id="@+id/textFieldQuantityDrinkThree"
             android:layout_width="180dp"
             android:layout_height="wrap_content"
-            android:hint="Quantidade"
+            android:hint="Quantidade em ml"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/textFieldNameDrinkThree"
             app:layout_constraintTop_toBottomOf="@+id/textDrinkThree">
@@ -176,7 +176,7 @@
             android:id="@+id/textFieldQuantityDrinkFour"
             android:layout_width="180dp"
             android:layout_height="wrap_content"
-            android:hint="Quantidade"
+            android:hint="Quantidade em ml"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/textFieldNameDrinkFour"
             app:layout_constraintTop_toBottomOf="@+id/textDrinkFour">
@@ -220,7 +220,7 @@
             android:id="@+id/textFieldQuantityDrinkFive"
             android:layout_width="180dp"
             android:layout_height="wrap_content"
-            android:hint="Nome"
+            android:hint="Quantidade em ml"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/textFieldNameDrinkFive"
             app:layout_constraintTop_toBottomOf="@+id/textDrinkFive">
@@ -264,7 +264,7 @@
             android:id="@+id/textFieldQuantityDrinkSix"
             android:layout_width="180dp"
             android:layout_height="wrap_content"
-            android:hint="Quantidade"
+            android:hint="Quantidade em ml"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/textFieldNameDrinkSix"
             app:layout_constraintTop_toBottomOf="@+id/textDrinkSix">

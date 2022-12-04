@@ -213,7 +213,7 @@ public class DrinksSetupFragment extends Fragment implements ServiceConnection, 
         List<DrinkModel> drinksStored = drinkDao.getAll();
         for (int i = 0; i < drinksStored.size(); i++) {
             nameTextInputEditTexts.get(i).setText(drinksStored.get(i).getName());
-            quantityTextInputEditTexts.get(i).setText(drinksStored.get(i).getQuantity());
+            quantityTextInputEditTexts.get(i).setText(drinksStored.get(i).getQuantity().toString());
         }
 
         buttonSave = view.findViewById(R.id.buttonSave);
@@ -241,24 +241,49 @@ public class DrinksSetupFragment extends Fragment implements ServiceConnection, 
         nameDrinkSix = inputFieldNameDrinkSix.getText().toString();
         quantityDrinkSix = inputFieldQuantityDrinkSix.getText().toString();
 
-        String data = "DrinkSetup" + ":" + nameDrinkOne + ":" + quantityDrinkOne + ":" + nameDrinkTwo + ":" + quantityDrinkTwo + ":" + nameDrinkThree + ":" + quantityDrinkThree + ":" + nameDrinkFour + ":" + quantityDrinkFour + ":" + nameDrinkFive + ":" + quantityDrinkFive + ":" + nameDrinkSix + ":" + quantityDrinkSix;
+        String data = "DrinkSetup" +
+                ":" + nameDrinkOne + ":" + quantityDrinkOne +
+                ":" + nameDrinkTwo + ":" + quantityDrinkTwo +
+                ":" + nameDrinkThree + ":" + quantityDrinkThree +
+                ":" + nameDrinkFour + ":" + quantityDrinkFour +
+                ":" + nameDrinkFive + ":" + quantityDrinkFive +
+                ":" + nameDrinkSix + ":" + quantityDrinkSix + "#";
 
         send(data);
+        storeDrinksSetup();
     }
 
     private void storeDrinksSetup() {
         DrinkModelDao drinkDao = db.drinkDao();
 
         ArrayList<DrinkModel> drinksSetup = new ArrayList<>();
-        drinksSetup.add(new DrinkModel(null, nameDrinkOne, Integer.parseInt(quantityDrinkOne)));
-        drinksSetup.add(new DrinkModel(null, nameDrinkTwo, Integer.parseInt(quantityDrinkTwo)));
-        drinksSetup.add(new DrinkModel(null, nameDrinkThree, Integer.parseInt(quantityDrinkThree)));
-        drinksSetup.add(new DrinkModel(null, nameDrinkFour, Integer.parseInt(quantityDrinkFour)));
-        drinksSetup.add(new DrinkModel(null, nameDrinkFive, Integer.parseInt(quantityDrinkFive)));
-        drinksSetup.add(new DrinkModel(null, nameDrinkSix, Integer.parseInt(quantityDrinkSix)));
 
-        for (DrinkModel drink : drinksSetup)
-            drinkDao.insertAll(drink);
+        if (nameDrinkOne.length() > 0 && quantityDrinkOne.length() > 0)
+            drinksSetup.add(new DrinkModel(null, nameDrinkOne, Integer.parseInt(quantityDrinkOne)));
+
+        if (nameDrinkTwo.length() > 0 && quantityDrinkTwo.length() > 0)
+            drinksSetup.add(new DrinkModel(null, nameDrinkTwo, Integer.parseInt(quantityDrinkTwo)));
+
+        if (nameDrinkThree.length() > 0 && quantityDrinkThree.length() > 0)
+            drinksSetup.add(new DrinkModel(null, nameDrinkThree, Integer.parseInt(quantityDrinkThree)));
+
+        if (nameDrinkFour.length() > 0 && quantityDrinkFour.length() > 0)
+            drinksSetup.add(new DrinkModel(null, nameDrinkFour, Integer.parseInt(quantityDrinkFour)));
+
+        if (nameDrinkFive.length() > 0 && quantityDrinkFive.length() > 0)
+            drinksSetup.add(new DrinkModel(null, nameDrinkFive, Integer.parseInt(quantityDrinkFive)));
+
+        if (nameDrinkSix.length() > 0 && quantityDrinkSix.length() > 0)
+            drinksSetup.add(new DrinkModel(null, nameDrinkSix, Integer.parseInt(quantityDrinkSix)));
+
+        if (drinksSetup.size() > 0) {
+            drinkDao.deleteAll();
+
+            for (DrinkModel drink : drinksSetup)
+                drinkDao.insertAll(drink);
+
+            Toast.makeText(getContext(), "Bebidas salvas com sucesso", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /*
@@ -312,11 +337,6 @@ public class DrinksSetupFragment extends Fragment implements ServiceConnection, 
 
     private void receive(byte[] data) {
         String msg = new String(data);
-
-        if (msg.contains("DrinksUpdatedSuccessfully")) {
-            Toast.makeText(getContext(), "Bebidas atualizadas com sucesso", Toast.LENGTH_LONG).show();
-            storeDrinksSetup();
-        }
     }
 
     private void status(String str) {
@@ -332,7 +352,6 @@ public class DrinksSetupFragment extends Fragment implements ServiceConnection, 
         status("connected");
         connected = DrinksSetupFragment.Connected.True;
         Toast.makeText(getContext(), "Bluetooth conectado", Toast.LENGTH_LONG).show();
-        send("InitialSetup#");
     }
 
     @Override
