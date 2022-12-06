@@ -12,6 +12,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
@@ -42,11 +43,14 @@ import com.barbot.bluetooth.SerialListener;
 import com.barbot.bluetooth.SerialService;
 import com.barbot.bluetooth.SerialSocket;
 import com.barbot.bluetooth.TextUtil;
+import com.barbot.view.viewmodel.MainViewModel;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
 
-public class DrinksListFragment extends Fragment implements ServiceConnection, SerialListener {
+public class DrinksListFragment extends Fragment {
+
+    MainViewModel mainViewModel;
 
     SecurityPreferences mSecurityPreferences;
 
@@ -54,91 +58,16 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
 
     DrinkListRecyclerViewAdapter adapter;
 
-    private enum Connected {False, Pending, True}
-
-    private String deviceAddress;
-    private SerialService service;
-
-    private DrinksListFragment.Connected connected = DrinksListFragment.Connected.False;
-    private boolean initialStart = true;
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         setRetainInstance(true);
 
-        mSecurityPreferences = new SecurityPreferences(getContext());
-
-        deviceAddress = mSecurityPreferences.getStoredString("device");
+        mainViewModel = new ViewModelProvider.AndroidViewModelFactory(getActivity().getApplication()).create(MainViewModel.class);
 
         db = Room.databaseBuilder(getActivity().getApplicationContext(),
                 AppDatabase.class, Constants.DATABASE_NAME).allowMainThreadQueries().build();
-    }
-
-    @Override
-    public void onDestroy() {
-        if (connected != DrinksListFragment.Connected.False)
-            disconnect();
-        getActivity().stopService(new Intent(getActivity(), SerialService.class));
-        super.onDestroy();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        if (service != null)
-            service.attach(this);
-        else
-            getActivity().startService(new Intent(getActivity(), SerialService.class)); // prevents service destroy on unbind from recreated activity caused by orientation change
-    }
-
-    @Override
-    public void onStop() {
-        if (service != null && !getActivity().isChangingConfigurations())
-            service.detach();
-        super.onStop();
-    }
-
-    @SuppressWarnings("deprecation")
-    // onAttach(context) was added with API 23. onAttach(activity) works for all API versions
-    @Override
-    public void onAttach(@NonNull Activity activity) {
-        super.onAttach(activity);
-        getActivity().bindService(new Intent(getActivity(), SerialService.class), this, Context.BIND_AUTO_CREATE);
-    }
-
-    @Override
-    public void onDetach() {
-        try {
-            getActivity().unbindService(this);
-        } catch (Exception ignored) {
-        }
-        super.onDetach();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (initialStart && service != null) {
-            initialStart = false;
-            getActivity().runOnUiThread(this::connect);
-        }
-    }
-
-    @Override
-    public void onServiceConnected(ComponentName name, IBinder binder) {
-        service = ((SerialService.SerialBinder) binder).getService();
-        service.attach(this);
-        if (initialStart && isResumed()) {
-            initialStart = false;
-            getActivity().runOnUiThread(this::connect);
-        }
-    }
-
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
-        service = null;
     }
 
     private void storeDrinkInformationInSecurityPreferences(Integer drinkResourceImageId, String drinkName, ArrayList<DrinkListModel.Ingredient> ingredients) {
@@ -151,21 +80,11 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
     }
 
     private void changeScreenToMakeDrinkFragment() {
-        Bundle args = new Bundle();
-        args.putString("device", deviceAddress);
-        Fragment fragment = new MakeDrinkFragment();
-        fragment.setArguments(args);
-        disconnect();
-        getFragmentManager().beginTransaction().replace(R.id.fragment, fragment, "make_drink").addToBackStack(null).commit();
+        getFragmentManager().beginTransaction().replace(R.id.fragment, new MakeDrinkFragment(), "make_drink").addToBackStack(null).commit();
     }
 
     private void changeScreenToMakeYourOwnDrinkFragment() {
-        Bundle args = new Bundle();
-        args.putString("device", deviceAddress);
-        Fragment fragment = new MakeYourOwnDrinkFragment();
-        fragment.setArguments(args);
-        disconnect();
-        getFragmentManager().beginTransaction().replace(R.id.fragment, fragment, "make_your_own_drink").addToBackStack(null).commit();
+        getFragmentManager().beginTransaction().replace(R.id.fragment, new MakeYourOwnDrinkFragment(), "make_your_own_drink").addToBackStack(null).commit();
     }
 
     private void renderDrinksList(View view) {
@@ -289,116 +208,13 @@ public class DrinksListFragment extends Fragment implements ServiceConnection, S
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.drinks_settings) {
-            Bundle args = new Bundle();
-            args.putString("device", deviceAddress);
-            Fragment fragment = new DrinksSetupFragment();
-            fragment.setArguments(args);
-            disconnect();
-            getFragmentManager().beginTransaction().replace(R.id.fragment, fragment, "drinks_setup").addToBackStack(null).commit();
+            getFragmentManager().beginTransaction().replace(R.id.fragment, new DrinksSetupFragment(), "drinks_setup").addToBackStack(null).commit();
             return true;
         } else if (id == R.id.debug_settings) {
-            Bundle args = new Bundle();
-            args.putString("device", deviceAddress);
-            Fragment fragment = new TerminalFragment();
-            fragment.setArguments(args);
-            disconnect();
-            getFragmentManager().beginTransaction().replace(R.id.fragment, fragment, "terminal").addToBackStack(null).commit();
+            getFragmentManager().beginTransaction().replace(R.id.fragment, new TerminalFragment(), "terminal").addToBackStack(null).commit();
             return true;
         } else {
             return super.onOptionsItemSelected(item);
         }
-    }
-
-    /*
-     * Serial + UI
-     */
-    private void connect() {
-        try {
-            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-            BluetoothDevice device = bluetoothAdapter.getRemoteDevice(deviceAddress);
-            status("connecting...");
-            connected = DrinksListFragment.Connected.Pending;
-            SerialSocket socket = new SerialSocket(getActivity().getApplicationContext(), device);
-            service.connect(socket);
-        } catch (Exception e) {
-            onSerialConnectError(e);
-        }
-    }
-
-    private void disconnect() {
-        connected = DrinksListFragment.Connected.False;
-        service.disconnect();
-    }
-
-    private void send(String str) {
-        if (connected != DrinksListFragment.Connected.True) {
-            Toast.makeText(getActivity(), "Bluetooth não conectado", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        try {
-            String msg;
-            byte[] data;
-            boolean hexEnabled = false;
-            String newline = TextUtil.newline_crlf;
-            if (hexEnabled) {
-                StringBuilder sb = new StringBuilder();
-                TextUtil.toHexString(sb, TextUtil.fromHexString(str));
-                TextUtil.toHexString(sb, newline.getBytes());
-                msg = sb.toString();
-                data = TextUtil.fromHexString(msg);
-            } else {
-                msg = str;
-                data = (str + newline).getBytes();
-            }
-            SpannableStringBuilder spn = new SpannableStringBuilder(msg + '\n');
-            spn.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.colorSendText)), 0, spn.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            service.write(data);
-        } catch (Exception e) {
-            onSerialIoError(e);
-        }
-    }
-
-    private void receive(byte[] data) {
-        String msg = new String(data);
-
-        if (msg.contains("InitialSetup")) {
-            DrinkModelDao drinkDao = db.drinkDao();
-            drinkDao.deleteAll();
-            String[] initialSetup = msg.split(":");
-            for (int i = 1; i < initialSetup.length; i += 2)
-                drinkDao.insertAll(new DrinkModel(null, initialSetup[i], Integer.parseInt(initialSetup[i + 1])));
-        }
-    }
-
-    private void status(String str) {
-        SpannableStringBuilder spn = new SpannableStringBuilder(str + '\n');
-        spn.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.colorStatusText)), 0, spn.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-    }
-
-    @Override
-    public void onSerialConnect() {
-        status("connected");
-        connected = DrinksListFragment.Connected.True;
-        Toast.makeText(getContext(), "Bluetooth conectado", Toast.LENGTH_LONG).show();
-        send("FirstMessage#");
-        send("InitialSetup#");
-    }
-
-    @Override
-    public void onSerialConnectError(Exception e) {
-        status("connection failed: " + e.getMessage());
-        disconnect();
-        Toast.makeText(getContext(), "connection failed", Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public void onSerialRead(byte[] data) {
-        receive(data);
-    }
-
-    @Override
-    public void onSerialIoError(Exception e) {
-        status("connection lost: " + e.getMessage());
-        disconnect();
     }
 }

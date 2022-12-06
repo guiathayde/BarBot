@@ -10,6 +10,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.ListFragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,11 +23,14 @@ import android.widget.TextView;
 
 import com.barbot.R;
 import com.barbot.SecurityPreferences;
+import com.barbot.view.viewmodel.MainViewModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
 public class DevicesFragment extends ListFragment {
+
+    MainViewModel mainViewModel;
 
     private BluetoothAdapter bluetoothAdapter;
     private final ArrayList<BluetoothDevice> listItems = new ArrayList<>();
@@ -38,6 +42,8 @@ public class DevicesFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
+        mainViewModel = new ViewModelProvider.AndroidViewModelFactory(getActivity().getApplication()).create(MainViewModel.class);
 
         mSecurityPreferences = new SecurityPreferences(getContext());
 
@@ -118,6 +124,7 @@ public class DevicesFragment extends ListFragment {
     @Override
     public void onListItemClick(@NonNull ListView l, @NonNull View v, int position, long id) {
         BluetoothDevice device = listItems.get(position - 1);
+        mainViewModel.updateDeviceAddress(device.getAddress());
         mSecurityPreferences.storeString("device", device.getAddress());
         Fragment fragment = new DrinksListFragment();
         getFragmentManager().beginTransaction().replace(R.id.fragment, fragment, "drinks_list").addToBackStack(null).commit();
